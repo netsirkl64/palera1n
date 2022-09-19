@@ -32,15 +32,15 @@ pip3 install pyimg4
 
 <!-- **WARNING**: As of now, this is pretty unstable (atleast just on A11). On my A11 device, it has the deep sleep bug while booted with palera1n, and will kernel panic, or just not wake up until force rebooted, about a minute after being in sleep mode. Patching AMFI also seems to log you out of iCloud? -->
 
-**WARNING**: As of now, on an iPhone X device, it does seem that if you leave your device in a low light area such as a dark bedroom for a period of time of more then 5 minutes it will kernel panic and does require force restarting the device. There has been some changes made to the script that should mitigate these issues, and once it is confirmed that these issues are resolved this warning will be removed.
+**WARNING**: As of now, on an iPhone X device, it does seem that if you leave your device in a low light area such as a dark bedroom for a period of time of more then 5 minutes it will kernel panic and does require force restarting the device.
 
 **WARNING 2**: We are not responsible for any data loss. The end user of this program accepts full responsibility should something cause the phone to stop working. It is understood that nothing should happen, but jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use irecovery.
 
-**Known working devices:**
-- iPhone X (GSM)
+**WARNING 3**: As of now, it was confirmed that if you do not use the onboard blobs for your device when you are using palera1n then it will cause the device to enter a blank screen after verbose boot. You will have a blank screen on your phone after verbose boot if you do not use the right blobs for palera1n. To ensure you do not get a blank screen after you boot your device with palera1n, you must dumb your onboard blobs using [kristenlc/SSHRD_Script-High-Sierra](https://github.com/kristenlc/SSHRD_Script-High-Sierra) and use those blobs with this script. Please do **not** use the blobs on [tsssaver.1conan.com](https://tsssaver.1conan.com/v2/) for your device as it will cause it to not boot with palera1n. If an issue is opened and you are using blobs other then your onboard blobs, it is considered not- supported and your issue will be closed with no further info given.
 
-**Known not working devies:**
-- iPhone 6s [https://github.com/itsnebulalol/palera1n/issues/5](https://github.com/itsnebulalol/palera1n/issues/5)
+**Known working devices:**
+- iPhone X
+- iPhone 6s
 
 # How to use
 1. Install libimobiledevice
