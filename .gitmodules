@@ -1,0 +1,3 @@
+[submodule "SSHRD_Script"]
+	path = SSHRD_Script
+	url = https://github.com/kristenlc/SSHRD_Script-High-Sierra/
