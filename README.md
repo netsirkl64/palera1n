@@ -47,9 +47,14 @@ pip3 install pyimg4
     - It's needed for `ideviceenterrecovery` and `ideviceinfo`
 2. Clone this repo with `git clone https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
 3. Prepare your blob for the **current version** you are on
-4. Run `./palera1n.sh blob.shsh2`
+    1. Put your device into DFU mode using readily available instructions online
+    2. `cd SSHRD_Script`
+    3. `./dump_onboard_blobs.sh <your iOS version here>`
+    4. Use the on- screen instructions, it is very simple and easy to follow
+    5. `mv dumped.shsh ../`
+4. Run `./palera1n.sh dumped.shsh`
     - \[A10+\] Before running, you **must** disable your passcode
-    - If you want to start from DFU, run `./palera1n.sh blob.shsh2 --dfu <your iOS version here>`
+    - If you want to start from DFU, run `./palera1n.sh dumped.shsh --dfu <your iOS version here>`
 5. Make sure your device is in normal mode, if you didn't start from DFU
 6. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
