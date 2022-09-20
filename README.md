@@ -45,7 +45,7 @@ pip3 install pyimg4
 # How to use
 1. Install libimobiledevice
     - It's needed for `ideviceenterrecovery` and `ideviceinfo`
-2. Clone this repo with `git clone https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
+2. Clone this repo with `git clone --recursive https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
 3. Prepare your blob for the **current version** you are on
     1. Put your device into DFU mode using readily available instructions online
     2. `cd SSHRD_Script`
