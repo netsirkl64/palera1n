@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0-15.6.1 work in progress semi-tethered checkm8 “developer jailbreak“
+iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 “developer jailbreak“
 
 # What does this do?
 It does boot the device with amfi patches, which allows the execution of unsigned code on the ios operating system, and it makes use of what is known as the checkm8 exploit. This is a “developer jailbreak“ meaning it does not come with the Pogo bootstrap already included.
