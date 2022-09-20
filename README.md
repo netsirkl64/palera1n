@@ -4,7 +4,7 @@ iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 “developer jail
 # What does this do?
 It does boot the device with amfi patches, which allows the execution of unsigned code on the ios operating system, and it makes use of what is known as the checkm8 exploit. This is a “developer jailbreak“ meaning it does not come with the Pogo bootstrap already included.
 
-The Pogo bootstrap must be installed with TrollStore, and you must install TrollStore using [these instructions](https://github.com/opa334/TrollStore/blob/main/install_with_sshrd.md). You should use the script from the repository [kristenlc/SSHRD_Script-High-Sierra](https://github.com/kristenlc/SSHRD_Script-High-Sierra) when you create your ramdisk.
+The Pogo bootstrap must be installed with TrollStore, and you must install TrollStore using [these instructions](https://github.com/opa334/TrollStore/blob/73ab06dcb4addc3c6b4069c70c3ec667ed5d9677/install_with_sshrd.md). You should use the script from the repository [kristenlc/SSHRD_Script-High-Sierra](https://github.com/kristenlc/SSHRD_Script-High-Sierra) when you create your ramdisk.
 
 The ramdisk is used to install TrollStore using the checkm8 exploit. You can get the IPA for the Pogo bootstrap [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) and you can use that after you are done getting TrollStore on your iPhone device.
 
