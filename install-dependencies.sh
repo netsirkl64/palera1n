@@ -1,10 +1,8 @@
 #!/usr/bin/env sh
 
-set -e
-
 which -s python
 if [[ $? != 0 ]] ; then
-    echo "Python must be present on your system in order to run this script"
+    echo "err. Python must be on your system in order to run this script"
     exit
 fi
 
@@ -46,4 +44,4 @@ sudo make install
 otool -L /usr/local/bin/img4tool
 cd ..
 
-python3 -m pip install pyimg4
+python -m pip install pyimg4
