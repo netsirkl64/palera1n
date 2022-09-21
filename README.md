@@ -19,6 +19,20 @@ It works because of a CoreTrust bug that affects iOS 14.0 - 15.4.1 (15.5b4).
 **NOTE: TrollStore will _NEVER_ work on anything higher than iOS 15.5 beta 4 (No not on iOS 15.5, not on iOS 15.6 and certainly not on iOS 16.x), please stop asking!**
 
 # Requirements
+`brew install make cmake automake autoconf libtool pkg-config curl openssl readline`
+
+[libplist-2.0 880](https://github.com/libimobiledevice/libplist/tree/c3af449543795ad4d3ab178120ff69e90fdd2cc8) must be present on your system for this to work
+```
+git clone --recursive https://github.com/libimobiledevice/libplist.git
+cd libplist
+git checkout c3af449543795ad4d3ab178120ff69e90fdd2cc8
+./autogen.sh
+sudo rm -f /usr/local/lib/libplist*
+make clean
+sudo make install
+ls /usr/local/lib/libplist*
+cd ..
+```
 [libgeneral 32](https://github.com/tihmstar/libgeneral/tree/254b42f067893ce32a10e8a99b2dfbec2149cb54) must be present on your system for this to work
 ```
 git clone --recursive https://github.com/tihmstar/libgeneral.git
@@ -29,6 +43,18 @@ sudo rm -f /usr/local/lib/libgeneral*
 make clean
 sudo make install
 ls /usr/local/lib/libgeneral*
+cd ..
+```
+[img4tool 190](https://github.com/tihmstar/img4tool/tree/e26f6e27c5fce7aff9e1ed5fe2b486b9989a5bec) must be present on your system for this to work
+```
+git clone --recursive https://github.com/tihmstar/img4tool.git
+cd img4tool
+git checkout e26f6e27c5fce7aff9e1ed5fe2b486b9989a5bec
+./autogen.sh
+sudo rm -f /usr/local/bin/img4tool
+make clean
+sudo make install
+otool -L /usr/local/bin/img4tool
 cd ..
 ```
 [pyimg4](https://github.com/m1stadev/PyIMG4) must be present on your system for this to work
