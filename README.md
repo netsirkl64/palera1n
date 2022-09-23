@@ -1,14 +1,5 @@
 # palera1n
-iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 “developer jailbreak“
-
-# What does this do?
-It does boot the device with amfi patches, which allows the execution of unsigned code on the ios operating system, and it makes use of what is known as the checkm8 exploit. This is a “developer jailbreak“ meaning it does not come with the Pogo bootstrap already included.
-
-The Pogo bootstrap must be installed with TrollStore, and you must install TrollStore using [these instructions](https://github.com/opa334/TrollStore/blob/73ab06dcb4addc3c6b4069c70c3ec667ed5d9677/install_with_sshrd.md). You should use the script from the repository [kristenlc/SSHRD_Script-High-Sierra](https://github.com/kristenlc/SSHRD_Script-High-Sierra) when you create your ramdisk.
-
-The ramdisk is used to install TrollStore using the checkm8 exploit. You can get the IPA for the Pogo bootstrap [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) and you can use that after you are done getting TrollStore on your iPhone device.
-
-**There is no tweak injection as of right now.**
+iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 "developer jailbreak"
 
 # TrollStore
 
@@ -18,27 +9,14 @@ It works because of a CoreTrust bug that affects iOS 14.0 - 15.4.1 (15.5b4).
 
 **NOTE: TrollStore will _NEVER_ work on anything higher than iOS 15.5 beta 4 (No not on iOS 15.5, not on iOS 15.6 and certainly not on iOS 16.x), please stop asking!**
 
-# Requirements
-<del>
+# What does this do?
+It does boot the device with amfi patches, which allows the execution of unsigned code on the ios operating system, and it makes use of what is known as the checkm8 exploit. This is a “developer jailbreak“ meaning it does not come with the Pogo bootstrap already included.
 
-[libgeneral 32](https://github.com/tihmstar/libgeneral/tree/254b42f067893ce32a10e8a99b2dfbec2149cb54) must be present on your system for this to work
-```
-git clone --recursive https://github.com/tihmstar/libgeneral.git
-cd libgeneral
-git checkout 254b42f067893ce32a10e8a99b2dfbec2149cb54
-./autogen.sh
-sudo rm -f /usr/local/lib/libgeneral*
-make clean
-sudo make install
-ls /usr/local/lib/libgeneral*
-cd ..
-```
-</del>
+The Pogo bootstrap must be installed with TrollStore, and you must install TrollStore using [these instructions](https://github.com/opa334/TrollStore/blob/73ab06dcb4addc3c6b4069c70c3ec667ed5d9677/install_with_sshrd.md). You should use the script from the repository [kristenlc/SSHRD_Script-High-Sierra](https://github.com/kristenlc/SSHRD_Script-High-Sierra) when you create your ramdisk.
 
-[pyimg4](https://github.com/m1stadev/PyIMG4) must be present on your system for this to work
-```
-pip3 install pyimg4
-```
+The ramdisk is used to install TrollStore using the checkm8 exploit. You can get the IPA for the Pogo bootstrap [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip) and you can use that after you are done getting TrollStore on your iPhone device.
+
+There is no tweak injection as of right now.
 
 **NOTE**: `sudo usbmuxd -p -f` should fix most USB issues on Linux.
 
@@ -54,6 +32,7 @@ pip3 install pyimg4
 
 **Known working devices:**
 - iPhone X
+- iPhone 7
 - iPhone 6s
 
 # How to use
