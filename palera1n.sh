@@ -47,11 +47,29 @@ mv gaster "$dir"/
 rm -rf gaster gaster-"$os".zip
 fi
 
+# Check for python3
+which -s python3
+if [[ $? != 0 ]] ; then
+    echo '[-] python3 not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    # Check for Homebrew
+    which -s brew
+    if [[ $? != 0 ]] ; then
+        # Install Homebrew
+        echo '[-] Homebrew not installed. Press any key to install it, or press ctrl + c to cancel'
+        read -n 1 -s
+        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+        brew install python
+    else
+        brew install python
+    fi
+fi
+
 # Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
-read -n 1 -s
-python3 -m pip install pyimg4
+    echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
+    read -n 1 -s
+    python3 -m pip install pyimg4
 fi
 
 # Re-create work dir if it exists, else, make it
@@ -98,19 +116,19 @@ while ! (lsusb 2 | grep ' Apple, Inc.' ); do
 sleep 1
 done
 fi
-version=$(ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
-arch=$(ideviceinfo | grep "CPUArchitecture: " | sed 's/CPUArchitecture: //')
+version=$("$dir"/ideviceinfo | grep "ProductVersion: " | sed 's/ProductVersion: //')
+arch=$("$dir"/ideviceinfo | grep "CPUArchitecture: " | sed 's/CPUArchitecture: //')
 if [ ! "$arch" = "arm64" ]; then
 echo "[-] palera1n doesn't, and never will, work on non-checkm8 devices"
 exit
 fi
-echo "Hello, $(ideviceinfo | grep "ProductType: " | sed 's/ProductType: //') on $version!"
+echo "Hello, $("$dir"/ideviceinfo | grep "ProductType: " | sed 's/ProductType: //') on $version!"
 fi
 
 # Put device into recovery mode, and set auto-boot to true
 if [ ! "$2" = '--dfu' ]; then
 echo "[*] Switching device into recovery mode..."
-ideviceenterrecovery $(ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //')
+"$dir"/ideviceenterrecovery $("$dir"/ideviceinfo | grep "UniqueDeviceID: " | sed 's/UniqueDeviceID: //')
 if [ "$os" = 'Darwin' ]; then
 if ! (system_profiler SPUSBDataType 2 | grep ' Apple Mobile Device (Recovery Mode):' ); then
 echo "[*] Waiting for device to reconnect in recovery mode"
