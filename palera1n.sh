@@ -50,18 +50,23 @@ fi
 # Check for python3
 which -s python3
 if [[ $? != 0 ]] ; then
-    echo '[-] python3 not installed. Press any key to install it, or press ctrl + c to cancel'
-    read -n 1 -s
-    # Check for Homebrew
-    which -s brew
-    if [[ $? != 0 ]] ; then
-        # Install Homebrew
-        echo '[-] Homebrew not installed. Press any key to install it, or press ctrl + c to cancel'
+    if [ "$os" = 'Darwin' ]; then
+        echo '[-] python3 not installed. Press any key to install it, or press ctrl + c to cancel'
         read -n 1 -s
-        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-        brew install python
+        # Check for Homebrew
+        which -s brew
+        if [[ $? != 0 ]] ; then
+            # Install Homebrew
+            echo '[-] Homebrew not installed. Press any key to install it, or press ctrl + c to cancel'
+            read -n 1 -s
+            ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+            brew install python
+        else
+            brew install python
+        fi
     else
-        brew install python
+        echo '[-] python3 not installed.'
+        exit
     fi
 fi
 
