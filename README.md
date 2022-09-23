@@ -57,22 +57,20 @@ pip3 install pyimg4
 - iPhone 6s
 
 # How to use
-1. Install libimobiledevice
-    - It's needed for `ideviceenterrecovery` and `ideviceinfo`
-2. Clone this repo with `git clone --recursive https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
-3. Prepare your blob for the **current version** you are on
+1. Clone this repo with `git clone --recursive https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
+2. Prepare your blob for the **current version** you are on
     1. Put your device into DFU mode using readily available instructions online
     2. `cd SSHRD_Script`
     3. `./dump_onboard_blobs.sh <your iOS version here>`
     4. Use the on- screen instructions, it is very simple and easy to follow
     5. `mv dumped.shsh ../`
-4. Run `sudo ./palera1n.sh dumped.shsh`
+3. Run `sudo ./palera1n.sh dumped.shsh`
     - \[A10+\] Before running, you **must** disable your passcode
     - If you want to start from DFU, run `sudo ./palera1n.sh dumped.shsh --dfu <your iOS version here>`
-5. Make sure your device is in normal mode, if you didn't start from DFU
-6. Follow the steps
+4. Make sure your device is in normal mode, if you didn't start from DFU
+5. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
-7. Install Pogo through TrollStore, then hit Install in the Pogo app!
+6. Install Pogo through TrollStore, then hit Install in the Pogo app!
     - You can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
