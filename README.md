@@ -35,6 +35,8 @@ There is no tweak injection as of right now.
 - iPhone 7
 - iPhone 6s
 
+<del>
+
 # How to use
 1. Clone this repo with `git clone --recursive https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
 2. Prepare your blob for the **current version** you are on
@@ -50,6 +52,17 @@ There is no tweak injection as of right now.
 5. Follow the steps
     - Right now, getting into DFU is steps for A11, please suppliment the steps for your device
 6. Install Pogo through TrollStore, then hit Install in the Pogo app!
+    - You can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
+    - You should now see Sileo on your homescreen, enjoy!
+    - You'll have to uicache in the Pogo app every reboot
+</del>
+    
+# How to use
+1. Clone this repo with `git clone --recursive https://github.com/kristenlc/palera1n-High-Sierra && cd palera1n-High-Sierra`
+2. Run `sudo ./palera1n.sh --dfu <your iOS version here>` you want to start from DFU
+    - \[A10+\] Before running, you **must** disable your passcode
+3. Follow the steps
+4. Install Pogo through TrollStore, then hit Install in the Pogo app!
     - You can get a Pogo IPA from [here](https://nightly.link/elihwyma/Pogo/workflows/build/main/Pogo.zip)
     - You should now see Sileo on your homescreen, enjoy!
     - You'll have to uicache in the Pogo app every reboot
