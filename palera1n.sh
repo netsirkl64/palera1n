@@ -6,7 +6,6 @@
 version="1.0.0"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
-shsh="$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
 
 # Functions
 step() {
@@ -16,8 +15,6 @@ sleep 1
 done
 printf '\r\e[0m%s (0)\n' "$2"
 }
-
-echo "$shsh"
 
 # Error handler
 ERR_HANDLER () {
@@ -91,6 +88,45 @@ echo "palera1n | Version $version"
 echo "Written by Nebula | Some code by Nathan | Patching commands and ramdisk by Mineek | Loader app by Amy"
 echo ""
 
+
+if [ "$1" = '--dfu' ]; then
+
+# Get device's iOS version from ideviceinfo if in normal mode
+if [ -z "$2" ]; then
+echo "[-] When using --dfu, please pass the version you're device is on"
+exit
+else
+version=$2
+fi
+cd SSHRD_Script
+./install_trollstore_and_dump_onboard_blobs.sh $version
+cd ..
+if [ "$os" = 'Darwin' ]; then
+
+if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); then
+echo "[*] Waiting for device in DFU mode"
+fi
+
+while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode)' >> /dev/null); do
+sleep 1
+done
+
+else
+
+if ! (lsusb 2> /dev/null | grep ' Apple, Inc. Mobile Device (DFU Mode)' >> /dev/null); then
+echo "[*] Waiting for device in DFU mode"
+fi
+
+while ! (lsusb 2> /dev/null | grep ' Apple, Inc. Mobile Device (DFU Mode)' >> /dev/null); do
+sleep 1
+done
+
+fi
+shsh="$(cd "$(dirname "SSHRD_Script/dumped.shsh")"; pwd)/$(basename "SSHRD_Script/dumped.shsh")"
+
+else
+shsh="$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
+
 # Get device's iOS version from ideviceinfo if in normal mode
 if [ "$2" = '--dfu' ]; then
 if [ -z "$3" ]; then
@@ -155,13 +191,6 @@ fi
 "$dir"/irecovery -c "saveenv"
 fi
 
-# Grab more info
-echo "[*] Getting device info..."
-cpid=$("$dir"/irecovery -q | grep CPID | sed 's/CPID: //')
-model=$("$dir"/irecovery -q | grep MODEL | sed 's/MODEL: //')
-deviceid=$("$dir"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
-ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
-
 # Have the user put the device into DFU
 if [ ! "$2" = '--dfu' ]; then
 echo "[*] Press any key when ready for DFU mode"
@@ -190,6 +219,13 @@ fi
 fi
 echo "[*] Device entered DFU!"
 fi
+fi
+# Grab more info
+echo "[*] Getting device info..."
+cpid=$("$dir"/irecovery -q | grep CPID | sed 's/CPID: //')
+model=$("$dir"/irecovery -q | grep MODEL | sed 's/MODEL: //')
+deviceid=$("$dir"/irecovery -q | grep PRODUCT | sed 's/PRODUCT: //')
+ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
 
 if [ ! -e boot-"$deviceid" ]; then
 sleep 2
