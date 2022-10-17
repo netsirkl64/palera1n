@@ -1,5 +1,5 @@
 # palera1n
-iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 "developer jailbreak"
+iOS 15.0 - 15.4.1 work in progress semi- tethered checkm8 "developer jailbreak"
 
 # TrollStore
 
