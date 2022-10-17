@@ -1,13 +1,6 @@
 # palera1n
 iOS 15.0 - 15.5 beta 4 work in progress semi- tethered checkm8 "developer jailbreak"
 
-# Bye
-This project is no longer under development, please use [palera1n/palera1n](https://github.com/palera1n/palera1n) for future updates.
-
-I have made [this pr](https://github.com/palera1n/palera1n/pull/73) with instructions on how to get palera1n working on high sierra.
-
-No more support will be provided for my version of palera1n, please only use regular palera1n going forward.
-
 # TrollStore
 
 TrollStore in a permasigned jailed app that can permanently install any IPA you open in it.
