@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
 mkdir -p logs
-set -e
-
-if [[ "$@" == *"--debug"* ]]; then
-    set -o xtrace
-fi
+set -o xtrace
 
 {
 
@@ -15,7 +11,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.3.0"
+version="1.3.0-High Sierra"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -264,6 +260,7 @@ chmod +x "$dir"/*
 
 echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
+echo "Support for High Sierra 10.13.6 by netsirkl64"
 echo ""
 
 if [ ! "$1" = '--tweaks' ] && [[ "$@" == *"--semi-tethered"* ]]; then
@@ -602,10 +599,6 @@ else
     "$dir"/irecovery -f boot-"$deviceid"/iBSS.img4
     sleep 1
     "$dir"/irecovery -f boot-"$deviceid"/ibot.img4
-    sleep 1
-    "$dir"/irecovery -f boot-"$deviceid"/bootlogo.img4
-    sleep 1
-    "$dir"/irecovery -c "setpicture 0x1"
     sleep 1
     "$dir"/irecovery -c fsboot
 fi
