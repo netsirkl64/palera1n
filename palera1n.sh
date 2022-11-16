@@ -147,9 +147,9 @@ _kill_if_running() {
 
 _beta_url() {
     if [[ "$deviceid" == *"iPad"* ]]; then
-        json=$(curl -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
+        json=$(curl -k -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
     else
-        json=$(curl -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
+        json=$(curl -k -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
     fi
 
     sources=$(echo "$json" | $dir/jq -r '.sources')
@@ -221,7 +221,7 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
-    curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
+    curl -k -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
@@ -328,7 +328,7 @@ deviceid=$(_info recovery PRODUCT)
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    ipswurl=$(curl -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
 fi
 
 # Have the user put the device into DFU
