@@ -33,6 +33,7 @@ dpkg -i ccsupport_1.3.8.deb &&
 curl https://debs.kristen.lc/com.noisyflake.networkmanager_1.0.2.deb -o com.noisyflake.networkmanager_1.0.2.deb &&
 dpkg -i com.noisyflake.networkmanager_1.0.2.deb
 ```
+The tweak does not work right away, you must respring your phone from the Tips app.
 
 ### NewTerm 3 tweak
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
