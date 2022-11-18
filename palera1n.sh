@@ -194,7 +194,7 @@ fi
 # ===========
 
 if [ "$1" = 'clean' ]; then
-    rm -rf boot* work .tweaksinstalled
+    rm -rf boot* blobs work .tweaksinstalled
     echo "[*] Removed the created boot files"
     exit
 elif [ "$1" = 'dfuhelper' ]; then
@@ -207,7 +207,7 @@ elif [ "$1" = '--restorerootfs' ]; then
     sleep 2
     echo "[*] Done, your device will boot into iOS now."
     # clean the boot files bcs we don't need them anymore
-    rm -rf boot-"$deviceid" work .tweaksinstalled
+    rm -rf boot-"$deviceid" blobs work .tweaksinstalled
     exit
 fi
 
