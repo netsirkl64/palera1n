@@ -15,6 +15,38 @@
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
 # Issues
+### NetworkManager 1.0.2 tweak
+It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
+
+Sorry, but Apple Carplay does not play nicely with it and causes a kernel panic.
+
+The tweak works fine as long as you do not ever use Apple Carplay on your device. This tweak is used to improve cell service by letting the user pick if they want Edge or 4G LTE service. This stops the phone from trying to roam between the two when you are out and about. There are many videos online showing you how to use the tweak after it is installed on your phone.
+
+You must install this tweak from the .deb files using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt update &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/ccsupport_1.3.8.deb -o ccsupport_1.3.8.deb &&
+dpkg -i ccsupport_1.3.8.deb &&
+curl https://debs.kristen.lc/com.noisyflake.networkmanager_1.0.2.deb -o com.noisyflake.networkmanager_1.0.2.deb &&
+dpkg -i com.noisyflake.networkmanager_1.0.2.deb
+```
+
+### NewTerm 3 tweak
+It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
+
+You must install this tweak from the .deb file using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt update &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/ws.hbang.newterm3_3.0b1_iphoneos-arm.deb -o ws.hbang.newterm3_3.0b1_iphoneos-arm.deb &&
+dpkg -i ws.hbang.newterm3_3.0b1_iphoneos-arm.deb
+```
+
 ### Need help?
 If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
 
