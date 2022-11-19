@@ -99,10 +99,10 @@ cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
 apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/libmagic1_5.43_iphoneos-arm.deb -o libmagic1_5.43_iphoneos-arm.deb &&
+dpkg -i libmagic1_5.43_iphoneos-arm.deb &&
 curl https://debs.kristen.lc/nano_6.4_iphoneos-arm.deb -o nano_6.4_iphoneos-arm.deb &&
 dpkg -i nano_6.4_iphoneos-arm.deb &&
-curl https://debs.kristen.lc/libmagic1_5.43_iphoneos-arm.deb -o libmagic1_5.43_iphoneos-arm.deb &&
-dpkg -i libmagic1_5.43_iphoneos-arm.deb
 curl https://debs.kristen.lc/org.thebigboss.repo.icons_1.0.deb -o org.thebigboss.repo.icons_1.0.deb &&
 dpkg -i org.thebigboss.repo.icons_1.0.deb &&
 curl https://debs.kristen.lc/bzip2_1.0.8_iphoneos-arm.deb -o bzip2_1.0.8_iphoneos-arm.deb &&
@@ -128,6 +128,9 @@ curl https://debs.kristen.lc/org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.d
 dpkg --force-all -i org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb &&
 ldid -s /Library/dpkg/info/cydia.postinst &&
 /Library/dpkg/info/cydia.postinst &&
+rm /Library/dpkg/info/cydia.postinst &&
+ldid -s /usr/bin/apt &&
+apt --fix-broken -y install &&
 ldid -s /Applications/Cydia.app &&
 ldid -s /usr/bin/xz &&
 ldid -s /usr/libexec/cydia/cydo
