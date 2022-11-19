@@ -1,0 +1,10 @@
+Types: deb
+URIs: https://havoc.app/
+Suites: ./
+Components:
+
+Types: deb
+URIs: http://mineek.online/
+Suites: ./
+Trusted: yes
+Components:
