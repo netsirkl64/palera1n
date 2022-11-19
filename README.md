@@ -48,6 +48,30 @@ curl https://debs.kristen.lc/ws.hbang.newterm3_3.0b1_iphoneos-arm.deb -o ws.hban
 dpkg -i ws.hbang.newterm3_3.0b1_iphoneos-arm.deb
 ```
 
+### Zebra package manager
+You must install this tweak from the .deb file using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt update &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/xyz.willy.zebra_1.1.28_iphoneos-arm.deb -o xyz.willy.zebra_1.1.28_iphoneos-arm.deb &&
+dpkg -i xyz.willy.zebra_1.1.28_iphoneos-arm.deb
+```
+
+### Sileo package manager
+palera1n comes with Sileo Nightly which can be buggy at times ngl.
+
+You must install the regular one from the .deb file using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt update &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/org.coolstar.sileo_2.3_iphoneos-arm.deb -o org.coolstar.sileo_2.3_iphoneos-arm.deb &&
+dpkg -i org.coolstar.sileo_2.3_iphoneos-arm.deb
+```
+
 ### Need help?
 If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
 
