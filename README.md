@@ -91,65 +91,47 @@ Components:
 ```
 
 ### Cydia package manager
-I repeat, do not try to install it, this is a install script for experimental purposes only.
-
 If you run this script to get Cydia on semi tethered palera1n you will brick your device.
 
-You have been warned.
+You must install this tweak from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
 apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
-
-curl https://debs.kristen.lc/libmagic1_5.43_iphoneos-arm.deb -o libmagic1_5.43_iphoneos-arm.deb &&
-dpkg -i libmagic1_5.43_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/nano_6.4_iphoneos-arm.deb -o nano_6.4_iphoneos-arm.deb &&
 dpkg -i nano_6.4_iphoneos-arm.deb &&
-
+curl https://debs.kristen.lc/libmagic1_5.43_iphoneos-arm.deb -o libmagic1_5.43_iphoneos-arm.deb &&
+dpkg -i libmagic1_5.43_iphoneos-arm.deb
 curl https://debs.kristen.lc/org.thebigboss.repo.icons_1.0.deb -o org.thebigboss.repo.icons_1.0.deb &&
 dpkg -i org.thebigboss.repo.icons_1.0.deb &&
-
 curl https://debs.kristen.lc/bzip2_1.0.8_iphoneos-arm.deb -o bzip2_1.0.8_iphoneos-arm.deb &&
 dpkg -i bzip2_1.0.8_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/gnupg_2.2.11-2_iphoneos-arm.deb -o gnupg_2.2.11-2_iphoneos-arm.deb &&
 dpkg --force-all -i gnupg_2.2.11-2_iphoneos-arm.deb &&
-
-apt --fix-broken -y install &&
-
+apt --fix-broken -y install
 curl https://debs.kristen.lc/gzip_1.11_iphoneos-arm.deb -o gzip_1.11_iphoneos-arm.deb &&
 dpkg -i gzip_1.11_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/lzma_4.32.7-5_iphoneos-arm.deb -o lzma_4.32.7-5_iphoneos-arm.deb &&
 dpkg --force-all -i lzma_4.32.7-5_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/apt7-lib_0.7.25.3-16_iphoneos-arm.deb -o apt7-lib_0.7.25.3-16_iphoneos-arm.deb &&
 dpkg -i apt7-lib_0.7.25.3-16_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/apt7-key_0.7.25.3-3_iphoneos-arm.deb -o apt7-key_0.7.25.3-3_iphoneos-arm.deb &&
 dpkg -i apt7-key_0.7.25.3-3_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/cydia-lproj_1.1.32_b1_iphoneos-arm.deb -o cydia-lproj_1.1.32_b1_iphoneos-arm.deb &&
 dpkg --force-all -i cydia-lproj_1.1.32_b1_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/xz-utils_5.2.5-3_iphoneos-arm.deb -o xz-utils_5.2.5-3_iphoneos-arm.deb &&
 dpkg --force-all -i xz-utils_5.2.5-3_iphoneos-arm.deb &&
-
 curl https://debs.kristen.lc/cydia_1.1.36_iphoneos-arm.deb -o cydia_1.1.36_iphoneos-arm.deb &&
 dpkg --force-all -i cydia_1.1.36_iphoneos-arm.deb &&
-
 apt --fix-broken -y install &&
-
+curl https://debs.kristen.lc/org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb -o org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb &&
+dpkg --force-all -i org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb &&
 ldid -s /Library/dpkg/info/cydia.postinst &&
-/Library/dpkg/info/cydia.postinst &&
-ldid -s /Applications/Cydia.app &&
+/Library/dpkg/info/cydia.postinit &&
+ldid -s /Applications/Cydia.app
 ldid -s /usr/bin/xz &&
-ldid -s /usr/libexec/cydia/cydo &&
-
-chmod 744 /etc/apt/sources.list.d/sileo.sources &&
-chmod 744 /etc/apt/sources.list.d/cydia.list
+ldid -s /usr/libexec/cydia/cydo
 ```
 nano /etc/apt/sources.list.d/sileo.sources
 ```
