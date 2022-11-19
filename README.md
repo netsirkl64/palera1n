@@ -145,6 +145,8 @@ Repos need to be updated for rootless, here are some that work currently:
 If you want to make a rootless repo, use the official [palera1n repo](https://github.com/palera1n/repo) for reference. Every deb should use the `iphoneos-arm64` architecture, and *nothing* should be on the rootfs. Everything should be in /var/jb.
 
 # Credits
+- [LO5R]
+    - Helping in the debugging process of getting Cydia Package Manager up and running
 - [Nathan](https://github.com/verygenericname)
     - The ramdisk that dumps blobs is a slimmed down version of SSHRD_Script
     - Also helped Mineek getting the kernel up and running and with the patches
