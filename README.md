@@ -128,8 +128,9 @@ ldid -s /Library/dpkg/info/cydia.postinst &&
 /Library/dpkg/info/cydia.postinst &&
 ldid -s /Applications/Cydia.app &&
 ldid -s /usr/bin/xz &&
+ldid -s /usr/libexec/cydia/cydo &&
 
-chmod 744 /etc/apt/sources.list.d/sileo.sources
+chmod 744 /etc/apt/sources.list.d/sileo.sources &&
 chmod 744 /etc/apt/sources.list.d/cydia.list
 ```
 nano /etc/apt/sources.list.d/sileo.sources
