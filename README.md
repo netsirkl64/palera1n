@@ -109,7 +109,7 @@ curl https://debs.kristen.lc/bzip2_1.0.8_iphoneos-arm.deb -o bzip2_1.0.8_iphoneo
 dpkg -i bzip2_1.0.8_iphoneos-arm.deb &&
 curl https://debs.kristen.lc/gnupg_2.2.11-2_iphoneos-arm.deb -o gnupg_2.2.11-2_iphoneos-arm.deb &&
 dpkg --force-all -i gnupg_2.2.11-2_iphoneos-arm.deb &&
-apt --fix-broken -y install
+apt --fix-broken -y install &&
 curl https://debs.kristen.lc/gzip_1.11_iphoneos-arm.deb -o gzip_1.11_iphoneos-arm.deb &&
 dpkg -i gzip_1.11_iphoneos-arm.deb &&
 curl https://debs.kristen.lc/lzma_4.32.7-5_iphoneos-arm.deb -o lzma_4.32.7-5_iphoneos-arm.deb &&
