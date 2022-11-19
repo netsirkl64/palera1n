@@ -126,8 +126,14 @@ apt --fix-broken -y install &&
 
 ldid -s /Library/dpkg/info/cydia.postinst &&
 /Library/dpkg/info/cydia.postinst &&
-ldid -s /Applications/Cydia.app
+ldid -s /Applications/Cydia.app &&
+
+chmod 744 /etc/apt/sources.list.d/cydia.list
 ```
+and then you will get tons of errors along the way and a broken dpkg in the process
+then reboot into normal ios without palera1n
+and then reboot again with palera1n and then cydia should open and sileo will work
+as of right now having issues with getting cydia to be able to refresh sources
 
 ### Need help?
 If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
