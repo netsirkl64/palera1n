@@ -128,12 +128,25 @@ ldid -s /Library/dpkg/info/cydia.postinst &&
 /Library/dpkg/info/cydia.postinst &&
 ldid -s /Applications/Cydia.app &&
 
+chmod 744 /etc/apt/sources.list.d/sileo.sources
 chmod 744 /etc/apt/sources.list.d/cydia.list
 ```
-and then you will get tons of errors along the way and a broken dpkg in the process
-then reboot into normal ios without palera1n
-and then reboot again with palera1n and then cydia should open and sileo will work
-as of right now having issues with getting cydia to be able to refresh sources
+nano /etc/apt/sources.list.d/sileo.sources
+```
+Types: deb
+URIs: https://mineek.online/
+Suites: ./
+Trusted: yes
+Components:
+```
+nano /etc/apt/sources.list.d/cydia.list
+```
+deb [trusted=yes] http://apt.thebigboss.org/repofiles/cydia/ stable main
+deb [trusted=yes] http://cydia.zodttd.com/repo/cydia/ stable main
+deb [trusted=yes] http://apt.modmyi.com/ stable main
+deb [trusted=yes] https://repo.chariz.com/ ./
+```
+reboot with palera1n tethered and dpkg will be fixed
 
 ### Need help?
 If you need help, **please** join our Discord. We disabled issues due to the flood of spam, and difficulty to respond in general. We are much more comfortable on Discord.
