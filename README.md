@@ -71,6 +71,24 @@ ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/org.coolstar.sileo_2.3_iphoneos-arm.deb -o org.coolstar.sileo_2.3_iphoneos-arm.deb &&
 dpkg -i org.coolstar.sileo_2.3_iphoneos-arm.deb
 ```
+nano /etc/apt/sources.list.d/sileo.sources
+```
+Types: deb
+URIs: https://havoc.app/
+Suites: ./
+Components:
+
+Types: deb
+URIs: https://repo.chariz.com/
+Suites: ./
+Components:
+
+Types: deb
+URIs: http://mineek.online/
+Suites: ./
+Trusted: yes
+Components:
+```
 
 ### Cydia package manager
 I repeat, do not try to install it, this is a install script for experimental purposes only.
@@ -136,17 +154,23 @@ chmod 744 /etc/apt/sources.list.d/cydia.list
 nano /etc/apt/sources.list.d/sileo.sources
 ```
 Types: deb
-URIs: https://mineek.online/
+URIs: https://havoc.app/
+Suites: ./
+Components:
+
+Types: deb
+URIs: http://mineek.online/
 Suites: ./
 Trusted: yes
 Components:
 ```
 nano /etc/apt/sources.list.d/cydia.list
 ```
-deb [trusted=yes] http://apt.thebigboss.org/repofiles/cydia/ stable main
-deb [trusted=yes] http://cydia.zodttd.com/repo/cydia/ stable main
-deb [trusted=yes] http://apt.modmyi.com/ stable main
-deb [trusted=yes] https://repo.chariz.com/ ./
+deb https://apt.bingner.com/ ./
+deb http://cydia.zodttd.com/repo/cydia/ stable main
+deb http://apt.modmyi.com/ stable main
+deb https://repo.chariz.com/ ./
+deb https://repo.dynastic.co/ ./
 ```
 reboot with palera1n tethered and dpkg will be fixed
 
