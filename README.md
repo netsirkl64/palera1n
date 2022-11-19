@@ -25,7 +25,6 @@ The tweak works fine as long as you do not ever use Apple Carplay on your device
 You must install this tweak from the .deb files using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/ccsupport_1.3.8.deb -o ccsupport_1.3.8.deb &&
@@ -41,7 +40,6 @@ It works great on iOS 15 with the palera1n jailbreak as long as you do not insta
 You must install this tweak from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/ws.hbang.newterm3_3.0b1_iphoneos-arm.deb -o ws.hbang.newterm3_3.0b1_iphoneos-arm.deb &&
@@ -52,7 +50,6 @@ dpkg -i ws.hbang.newterm3_3.0b1_iphoneos-arm.deb
 You must install this tweak from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/xyz.willy.zebra_1.1.28_iphoneos-arm.deb -o xyz.willy.zebra_1.1.28_iphoneos-arm.deb &&
@@ -65,29 +62,10 @@ palera1n comes with Sileo Nightly which can be buggy at times ngl.
 You must install the regular one from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/org.coolstar.sileo_2.3_iphoneos-arm.deb -o org.coolstar.sileo_2.3_iphoneos-arm.deb &&
 dpkg -i org.coolstar.sileo_2.3_iphoneos-arm.deb
-```
-nano /etc/apt/sources.list.d/sileo.sources
-```
-Types: deb
-URIs: https://havoc.app/
-Suites: ./
-Components:
-
-Types: deb
-URIs: https://repo.chariz.com/
-Suites: ./
-Components:
-
-Types: deb
-URIs: http://mineek.online/
-Suites: ./
-Trusted: yes
-Components:
 ```
 
 ### Cydia package manager
@@ -96,7 +74,6 @@ if you run this script to get cydia package manager on semi tethered palera1n yo
 you must install this tweak from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt update &&
 apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://raw.githubusercontent.com/netsirkl64/palera1n-High-Sierra/main/cydia-installer.sh -o cydia-installer.sh &&
