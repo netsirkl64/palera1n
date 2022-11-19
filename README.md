@@ -124,12 +124,11 @@ curl https://debs.kristen.lc/xz-utils_5.2.5-3_iphoneos-arm.deb -o xz-utils_5.2.5
 dpkg --force-all -i xz-utils_5.2.5-3_iphoneos-arm.deb &&
 curl https://debs.kristen.lc/cydia_1.1.36_iphoneos-arm.deb -o cydia_1.1.36_iphoneos-arm.deb &&
 dpkg --force-all -i cydia_1.1.36_iphoneos-arm.deb &&
-apt --fix-broken -y install &&
 curl https://debs.kristen.lc/org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb -o org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb &&
 dpkg --force-all -i org.thebigboss.dismissprogress_1.1.1_iphoneos-arm.deb &&
 ldid -s /Library/dpkg/info/cydia.postinst &&
-/Library/dpkg/info/cydia.postinit &&
-ldid -s /Applications/Cydia.app
+/Library/dpkg/info/cydia.postinst &&
+ldid -s /Applications/Cydia.app &&
 ldid -s /usr/bin/xz &&
 ldid -s /usr/libexec/cydia/cydo
 ```
