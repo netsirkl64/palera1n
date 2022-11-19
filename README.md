@@ -127,6 +127,7 @@ apt --fix-broken -y install &&
 ldid -s /Library/dpkg/info/cydia.postinst &&
 /Library/dpkg/info/cydia.postinst &&
 ldid -s /Applications/Cydia.app &&
+ldid -s /usr/bin/xz &&
 
 chmod 744 /etc/apt/sources.list.d/sileo.sources
 chmod 744 /etc/apt/sources.list.d/cydia.list
