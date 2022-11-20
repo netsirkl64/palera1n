@@ -15,6 +15,37 @@
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
 # Issues
+### SnowBoard 1.5.1 beta1 tweak 
+It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
+
+You must install this tweak from the .deb file using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb -o com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
+dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb
+```
+You will have to respring your device from the tips app after installing this tweak from ssh.
+
+### Viola 1.9.7 theme
+It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
+
+We should also mention that you should please go and support the creator of this theme and pay for it proper.
+
+This is just an alternative to installing from sileo package manager if that is not working for you.
+
+You must install this tweak from the .deb file using ssh with these commands.
+```Bash
+cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
+apt install -y ldid curl jq &&
+ldid -s /usr/lib/librtmp.1.dylib &&
+curl https://debs.kristen.lc/com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb -o com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
+dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
+curl https://debs.kristen.lc/com.bousrih.viola_1.9.7_iphoneos-arm.deb -o com.bousrih.viola_1.9.7_iphoneos-arm.deb &&
+dpkg -i com.bousrih.viola_1.9.7_iphoneos-arm.deb
+```
+
 ### NetworkManager 1.0.2 tweak
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
 
@@ -69,9 +100,9 @@ dpkg -i org.coolstar.sileo_2.3_iphoneos-arm.deb
 ```
 
 ### Cydia package manager
-if you run this script to get cydia package manager on semi tethered palera1n you will brick your device.
+If you run this script to get Cydia package manager on semi tethered palera1n you will brick your device.
 
-you must install this tweak from the .deb file using ssh with these commands.
+You must install this tweak from the .deb file using ssh with these commands.
 ```Bash
 cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
 apt install -y ldid curl jq &&
@@ -79,9 +110,9 @@ ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://raw.githubusercontent.com/netsirkl64/palera1n-High-Sierra/main/cydia-installer.sh -o cydia-installer.sh &&
 sh cydia-installer.sh
 ```
-reboot with palera1n tethered and dpkg will be fixed after you open the tips app and hit install for the jailbreak.
+You should now reboot with palera1n tethered and then your dpkg will be fixed after you open the tips app and hit install for the jailbreak.
 
-now any time you reboot your device with palera1n tethered and install jailbreak using the tips app, you must do this for cydia to work.
+You must now run the commands below using ssh now any time you reboot your device with palera1n tethered and install jailbreak using the tips app.
 ```
 rm -f /etc/apt/sources.list.d/sileo.sources
 curl https://raw.githubusercontent.com/netsirkl64/palera1n-High-Sierra/main/sileo.sources -o /etc/apt/sources.list.d/sileo.sources
