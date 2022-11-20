@@ -2,6 +2,7 @@
 
 mkdir -p logs
 set -o xtrace
+verbose=1
 
 {
 
