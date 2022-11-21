@@ -11,6 +11,9 @@
     <strong><a href="https://twitter.com/palera1n">Twitter</a></strong>
 </p>
 
+# What does this fork of palera1n have new?
+This version of palera1n adds Cydia Package Manager and Zebra to the jailbreak . This version of palera1n also adds kickstart support, so now any time you boot your phone with palera1n, you can open the tips app and kickstart the jailbreak. This allows you to start all your tweaks and themes up again without having to reinstall any of them after a restart. This fork also fixes cy+cpu.arm64 error with dpkg, so now any time this happens you can kickstart your phone in the tips app to fix that.
+
 # How does it work?
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
@@ -26,7 +29,7 @@ ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb -o com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
 dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb
 ```
-You will have to respring your device from the tips app after installing this tweak from ssh.
+The tweak does not work right away, you must kickstart your phone from the Tips app.
 
 ### Viola 1.9.7 theme
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
@@ -45,6 +48,7 @@ dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
 curl https://debs.kristen.lc/com.bousrih.viola_1.9.7_iphoneos-arm.deb -o com.bousrih.viola_1.9.7_iphoneos-arm.deb &&
 dpkg -i com.bousrih.viola_1.9.7_iphoneos-arm.deb
 ```
+The tweak does not work right away, you must kickstart your phone from the Tips app.
 
 ### NetworkManager 1.0.2 tweak
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
@@ -63,7 +67,7 @@ dpkg -i ccsupport_1.3.8.deb &&
 curl https://debs.kristen.lc/com.noisyflake.networkmanager_1.0.2.deb -o com.noisyflake.networkmanager_1.0.2.deb &&
 dpkg -i com.noisyflake.networkmanager_1.0.2.deb
 ```
-The tweak does not work right away, you must respring your phone from the Tips app.
+The tweak does not work right away, you must kickstart your phone from the Tips app.
 
 ### NewTerm 3 tweak
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
@@ -75,47 +79,6 @@ apt install -y ldid curl jq &&
 ldid -s /usr/lib/librtmp.1.dylib &&
 curl https://debs.kristen.lc/ws.hbang.newterm3_3.0b1_iphoneos-arm.deb -o ws.hbang.newterm3_3.0b1_iphoneos-arm.deb &&
 dpkg -i ws.hbang.newterm3_3.0b1_iphoneos-arm.deb
-```
-
-### Zebra package manager
-You must install this tweak from the .deb file using ssh with these commands.
-```Bash
-cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt install -y ldid curl jq &&
-ldid -s /usr/lib/librtmp.1.dylib &&
-curl https://debs.kristen.lc/xyz.willy.zebra_1.1.28_iphoneos-arm.deb -o xyz.willy.zebra_1.1.28_iphoneos-arm.deb &&
-dpkg -i xyz.willy.zebra_1.1.28_iphoneos-arm.deb
-```
-
-### Sileo package manager
-palera1n comes with Sileo Nightly which can be buggy at times ngl.
-
-You must install the regular one from the .deb file using ssh with these commands.
-```Bash
-cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt install -y ldid curl jq &&
-ldid -s /usr/lib/librtmp.1.dylib &&
-curl https://debs.kristen.lc/org.coolstar.sileo_2.3_iphoneos-arm.deb -o org.coolstar.sileo_2.3_iphoneos-arm.deb &&
-dpkg -i org.coolstar.sileo_2.3_iphoneos-arm.deb
-```
-
-### Cydia package manager
-If you run this script to get Cydia package manager on semi tethered palera1n you will brick your device.
-
-You must install this tweak from the .deb file using ssh with these commands.
-```Bash
-cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt install -y ldid curl jq &&
-ldid -s /usr/lib/librtmp.1.dylib &&
-curl https://raw.githubusercontent.com/netsirkl64/palera1n-High-Sierra/main/cydia-installer.sh -o cydia-installer.sh &&
-sh cydia-installer.sh
-```
-You should now reboot with palera1n tethered and then your dpkg will be fixed after you open the tips app and hit install for the jailbreak.
-
-You must now run the commands below using ssh now any time you reboot your device with palera1n tethered and install jailbreak using the tips app.
-```
-rm -f /etc/apt/sources.list.d/sileo.sources
-curl https://raw.githubusercontent.com/netsirkl64/palera1n-High-Sierra/main/sileo.sources -o /etc/apt/sources.list.d/sileo.sources
 ```
 
 ### Need help?
