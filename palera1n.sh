@@ -243,11 +243,7 @@ _wait() {
 _dfuhelper() {
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
-    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step_one="Hold volume down + side button"
-    else
-        step_one="Hold home + power button"
-    fi
+    step_one="Hold volume down + side button"
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
@@ -255,11 +251,7 @@ _dfuhelper() {
     sleep 3
     "$dir"/irecovery -c "reset"
     step 1 "Keep holding"
-    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step 10 'Release side button, but keep holding volume down'
-    else
-        step 10 'Release power button, but keep holding home button'
-    fi
+    step 10 'Release side button, but keep holding volume down'
     sleep 1
     
     if [ "$(get_device_mode)" = "dfu" ]; then
@@ -486,23 +478,7 @@ fi
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        device_os=iPadOS
-        device=iPad
-    elif [[ "$deviceid" == *"iPod"* ]]; then
-        device_os=iOS
-        device=iPod
-    else
-        device_os=iOS
-        device=iPhone
-    fi
-
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
-    if [ "$buildid" == "19B75" ]; then
-        buildid=19B74
-    fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
 fi
 
 if [ "$restorerootfs" = "1" ]; then
