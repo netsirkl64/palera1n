@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 mkdir -p logs
-set -o xtrace
 verbose=1
 
 {
@@ -378,7 +377,6 @@ _kill_if_running iproxy
 
 echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
-echo "Support for High Sierra 10.13.6 by netsirkl64"
 echo ""
 
 version=""
@@ -787,7 +785,6 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     cd ..
     "$dir"/img4 -i work/iBSS.patched -o boot-"$deviceid"/iBSS.img4 -M work/IM4M -A -T ibss
     "$dir"/img4 -i work/ibot.patched -o boot-"$deviceid"/ibot.img4 -M work/IM4M -A -T `if [[ "$cpid" == *"0x801"* ]]; then echo "ibss"; else echo "ibec"; fi`
-    "$dir"/img4 -i other/bootlogo.im4p -o boot-"$deviceid"/bootlogo.img4 -M work/IM4M -A -T rlgo
 
     touch boot-"$deviceid"/.fsboot
 fi
