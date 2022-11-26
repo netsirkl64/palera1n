@@ -17,10 +17,20 @@ os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
 branch=$(git rev-parse --abbrev-ref HEAD)
+max_args=1
+arg_count=0
+disk=8
 
 # =========
 # Functions
 # =========
+remote_cmd() {
+    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "$@"
+}
+remote_cp() {
+    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 $@
+}
+
 step() {
     for i in $(seq "$1" -1 1); do
         printf '\r\e[1;36m%s (%d) ' "$2" "$i"
@@ -29,70 +39,109 @@ step() {
     printf '\r\e[0m%s (0)\n' "$2"
 }
 
-_wait() {
-    if [ "$1" = 'normal' ]; then
-        if [ "$os" = 'Darwin' ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); then
-                echo "[*] Waiting for device in normal mode"
-            fi
+print_help() {
+    cat << EOF
+Usage: $0 [Options] [ subcommand | iOS version ]
+iOS 15.0-15.7.1 jailbreak tool for checkm8 devices
 
-            while ! (system_profiler SPUSBDataType 2> /dev/null | grep 'Manufacturer: Apple Inc.' >> /dev/null); do
-                sleep 1
-            done
-        else
-            if ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); then
-                echo "[*] Waiting for device in normal mode"
-            fi
+Options:
+    --help              Print this help
+    --tweaks            Enable tweaks
+    --dfuhelper         A helper to help get A11 devices into DFU mode from recovery mode
+    --no-install        Skip murdering Tips app
+    --no-baseband       Indicate that the device does not have a baseband
+    --restorerootfs     Remove the jailbreak (Actually more than restore rootfs)
+    --debug             Debug the script
+    --verbose           Enable verbose boot on the device
 
-            while ! (lsusb 2> /dev/null | grep ' Apple, Inc.' >> /dev/null); do
-                sleep 1
-            done
-        fi
-    elif [ "$1" = 'recovery' ]; then
-        if [ "$os" = 'Darwin' ]; then
-            if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); then
-                echo "[*] Waiting for device to reconnect in recovery mode"
-            fi
+Subcommands:
+    dfuhelper           An alias for --dfuhelper
+    clean               Deletes the created boot files
 
-            while ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (Recovery Mode):' >> /dev/null); do
-                sleep 1
-            done
-        else
-            if ! (lsusb 2> /dev/null | grep 'Recovery Mode' >> /dev/null); then
-                echo "[*] Waiting for device to reconnect in recovery mode"
-            fi
-
-            while ! (lsusb 2> /dev/null | grep 'Recovery Mode' >> /dev/null); do
-                sleep 1
-            done
-        fi
-
-        if [ "$1" = "--tweaks" ]; then
-            "$dir"/irecovery -c "setenv auto-boot false"
-            "$dir"/irecovery -c "saveenv"
-        else
-            "$dir"/irecovery -c "setenv auto-boot true"
-            "$dir"/irecovery -c "saveenv"
-        fi
-
-        if [[ "$@" == *"--semi-tethered"* ]]; then
-            "$dir"/irecovery -c "setenv auto-boot true"
-            "$dir"/irecovery -c "saveenv"
-        fi
-    fi
+The iOS version argument should be the iOS version of your device.
+It is required when starting from DFU mode.
+EOF
 }
 
-_check_dfu() {
-    if [ "$os" = 'Darwin' ]; then
-        if ! (system_profiler SPUSBDataType 2> /dev/null | grep ' Apple Mobile Device (DFU Mode):' >> /dev/null); then
-            echo "[-] Connected device is not in DFU mode, please rerun the script and try again"
-            exit
+parse_opt() {
+    case "$1" in
+        --)
+            no_more_opts=1
+            ;;
+        --tweaks)
+            tweaks=1
+            ;;
+        --dfuhelper)
+            dfuhelper=1
+            ;;
+        --no-baseband)
+            no_baseband=1
+            ;;
+        --no-install)
+            no_install=1
+            ;;
+        --verbose)
+            verbose=1
+            ;;
+        --dfu)
+            echo "[!] DFU mode devices are now automatically detected and --dfu is deprecated"
+            ;;
+        --restorerootfs)
+            restorerootfs=1
+            ;;
+        --debug)
+            debug=1
+            ;;
+        --help)
+            print_help
+            exit 0
+            ;;
+        *)
+            echo "[-] Unknown option $1. Use $0 --help for help."
+            exit 1;
+    esac
+}
+
+parse_arg() {
+    arg_count=$((arg_count + 1))
+    case "$1" in
+        dfuhelper)
+            dfuhelper=1
+            ;;
+        clean)
+            clean=1
+            ;;
+        *)
+            version="$1"
+            ;;
+    esac
+}
+
+parse_cmdline() {
+    for arg in $@; do
+        if [[ "$arg" == --* ]] && [ -z "$no_more_opts" ]; then
+            parse_opt "$arg";
+        elif [ "$arg_count" -lt "$max_args" ]; then
+            parse_arg "$arg";
+        else
+            echo "[-] Too many arguments. Use $0 --help for help.";
+            exit 1;
         fi
+    done
+}
+
+recovery_fix_auto_boot() {
+    if [ "$tweaks" = "1" ]; then
+        "$dir"/irecovery -c "setenv auto-boot false"
+        "$dir"/irecovery -c "saveenv"
     else
-        if ! (lsusb 2> /dev/null | grep 'DFU Mode' >> /dev/null); then
-            echo "[-] Connected device is not in DFU mode, please rerun the script and try again"
-            exit
-        fi
+        "$dir"/irecovery -c "setenv auto-boot true"
+        "$dir"/irecovery -c "saveenv"
+    fi
+
+    if [ "$semi_tethered" = "1" ]; then
+        "$dir"/irecovery -c "setenv auto-boot true"
+        "$dir"/irecovery -c "saveenv"
     fi
 }
 
@@ -120,19 +169,106 @@ _reset() {
         "$dir"/gaster reset
 }
 
+get_device_mode() {
+    if [ "$os" = "Darwin" ]; then
+        apples="$(system_profiler SPUSBDataType | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r)"
+    elif [ "$os" = "Linux" ]; then
+        apples="$(lsusb  | cut -d' ' -f6 | grep '05ac:' | cut -d: -f2)"
+    fi
+    local device_count=0
+    local usbserials=""
+    for apple in $apples; do
+        case "$apple" in
+            12ab)
+            device_mode=normal
+            device_count=$((device_count+1))
+            ;;
+            12a8)
+            device_mode=normal
+            device_count=$((device_count+1))
+            ;;
+            1281)
+            device_mode=recovery
+            device_count=$((device_count+1))
+            ;;
+            1227)
+            device_mode=dfu
+            device_count=$((device_count+1))
+            ;;
+            1222)
+            device_mode=diag
+            device_count=$((device_count+1))
+            ;;
+            1338)
+            device_mode=checkra1n_stage2
+            device_count=$((device_count+1))
+            ;;
+            4141)
+            device_mode=pongo
+            device_count=$((device_count+1))
+            ;;
+        esac
+    done
+    if [ "$device_count" = "0" ]; then
+        device_mode=none
+    elif [ "$device_count" -ge "2" ]; then
+        echo "[-] Please attach only one device" > /dev/tty
+        kill -30 0
+        exit 1;
+    fi
+    if [ "$os" = "Linux" ]; then
+        usbserials=$(cat /sys/bus/usb/devices/*/serial)
+    elif [ "$os" = "Darwin" ]; then
+        usbserials=$(system_profiler SPUSBDataType | grep 'Serial Number' | cut -d: -f2- | sed 's/ //')
+    fi
+    if grep -qE '(ramdisk tool|SSHRD_Script) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{1,2} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2}' <<< "$usbserials"; then
+        device_mode=ramdisk
+    fi
+    echo "$device_mode"
+}
+
+_wait() {
+    if [ "$(get_device_mode)" != "$1" ]; then
+        echo "[*] Waiting for device in $1 mode"
+    fi
+
+    while [ "$(get_device_mode)" != "$1" ]; do
+        sleep 1
+    done
+
+    if [ "$1" = 'recovery' ]; then
+        recovery_fix_auto_boot;
+    fi
+}
+
 _dfuhelper() {
+    local step_one;
+    deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step_one="Hold volume down + side button"
+    else
+        step_one="Hold home + power button"
+    fi
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
-    step 4 "Hold volume down + side button" &
+    step 4 "$step_one" &
     sleep 3
     "$dir"/irecovery -c "reset"
     step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step 10 'Release side button, but keep holding volume down'
+    else
+        step 10 'Release power button, but keep holding home button'
+    fi
     sleep 1
     
-    _check_dfu
-    echo "[*] Device entered DFU!"
+    if [ "$(get_device_mode)" = "dfu" ]; then
+        echo "[*] Device entered DFU!"
+    else
+        echo "[-] Device did not enter DFU mode, rerun the script and try again"
+        return -1
+    fi
 }
 
 _kill_if_running() {
@@ -146,25 +282,11 @@ _kill_if_running() {
     fi
 }
 
-_beta_url() {
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        json=$(curl -k -s 'https://api.appledb.dev/ios/iPadOS;19B5060d.json')
-    else
-        json=$(curl -k -s 'https://api.appledb.dev/ios/iOS;19B5060d.json')
-    fi
-
-    sources=$(echo "$json" | $dir/jq -r '.sources')
-    beta_url=$(echo "$sources" | $dir/jq -r --arg deviceid "$deviceid" '.[] | select(.type == "ota" and (.deviceMap | index($deviceid))) | .links[0].url')
-    echo "$beta_url"
-}
-
 _exit_handler() {
     if [ "$os" = 'Darwin' ]; then
-        if [ ! "$1" = '--dfu' ]; then
-            defaults write -g ignore-devices -bool false
-            defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
-            killall Finder
-        fi
+        defaults write -g ignore-devices -bool false
+        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+        killall Finder
     fi
     [ $? -eq 0 ] && exit
     echo "[-] An error occurred"
@@ -190,31 +312,24 @@ if [ "$os" = 'Darwin' ]; then
     killall Finder
 fi
 
-# ===========
-# Subcommands
-# ===========
-
-if [ "$1" = 'clean' ]; then
-    rm -rf boot* blobs work .tweaksinstalled
-    echo "[*] Removed the created boot files"
-    exit
-elif [ "$1" = 'dfuhelper' ]; then
-    echo "[*] Running DFU helper"
-    _dfuhelper
-    exit
-elif [ "$1" = '--restorerootfs' ]; then
-    echo "[*] Restoring rootfs..."
-    "$dir"/irecovery -n
-    sleep 2
-    echo "[*] Done, your device will boot into iOS now."
-    # clean the boot files bcs we don't need them anymore
-    rm -rf boot-"$deviceid" blobs work .tweaksinstalled
-    exit
-fi
-
 # ============
 # Dependencies
 # ============
+
+# Check for required commands
+if [ "$os" = 'Linux' ]; then
+    linux_cmds='lsusb'
+fi
+
+for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
+    if ! command -v "${cmd}" > /dev/null; then
+        echo "[-] Command '${cmd}' not installed, please install it!";
+        cmd_not_found=1
+    fi
+done
+if [ "$cmd_not_found" = "1" ]; then
+    exit 1
+fi
 
 # Download gaster
 if [ -e "$dir"/gaster ]; then
@@ -259,22 +374,35 @@ chmod +x "$dir"/*
 # Start
 # ============
 
+_kill_if_running iproxy
+
 echo "palera1n | Version $version-$branch-$commit"
 echo "Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy"
 echo "Support for High Sierra 10.13.6 by netsirkl64"
 echo ""
 
-if [ ! "$1" = '--tweaks' ] && [[ "$@" == *"--semi-tethered"* ]]; then
-    echo "[!] --semi-tethered may not be used with rootless"
-    echo "    Rootless is already semi-tethered"
+version=""
+parse_cmdline "$@"
+
+if [ "$debug" = "1" ]; then
+    set -o xtrace
+fi
+
+if [ "$clean" = "1" ]; then
+    rm -rf boot* blobs work .tweaksinstalled
+    rm -rf ramdisk/sshramdisk
+    echo "[*] Removed the created boot files"
     exit
 fi
 
-if [ "$1" = '--tweaks' ]; then
-    _check_dfu
+if [ -z "$tweaks" ] && [ "$semi_tethered" = "1" ]; then
+    echo "[!] --semi-tethered may not be used with rootless"
+    echo "    Rootless is already semi-tethered"
+    >&2 echo "Hint: to use tweaks on semi-tethered, specify the --tweaks option"
+    exit 1;
 fi
 
-if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [[ ! "$@" == *"--semi-tethered"* ]]; then
+if [ "$tweaks" = 1 ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimeragree" ] && [ -z "$semi_tethered" ] && [ -z "$restorerootfs" ]; then
     echo "!!! WARNING WARNING WARNING !!!"
     echo "This flag will add tweak support BUT WILL BE TETHERED."
     echo "THIS ALSO MEANS THAT YOU'LL NEED A PC EVERY TIME TO BOOT."
@@ -299,15 +427,39 @@ if [ "$1" = '--tweaks' ] && [ ! -e ".tweaksinstalled" ] && [ ! -e ".disclaimerag
 fi
 
 # Get device's iOS version from ideviceinfo if in normal mode
-if [ "$1" = '--dfu' ] || [ "$1" = '--tweaks' ]; then
-    if [ -z "$2" ]; then
-        echo "[-] When using --dfu, please pass the version you're device is on"
-        exit
+echo "[*] Waiting for devices"
+while [ "$(get_device_mode)" = "none" ]; do
+    sleep 1;
+done
+echo $(echo "[*] Detected $(get_device_mode) mode device" | sed 's/dfu/DFU/')
+
+if grep -E 'pongo|checkra1n_stage2|diag' <<< "$(get_device_mode)"; then
+    echo "[-] Detected device in unsupported mode '$(get_device_mode)'"
+    exit 1;
+fi
+
+if [ "$(get_device_mode)" != "normal" ] && [ -z "$version" ] && [ "$dfuhelper" != "1" ]; then
+    echo "[-] You must pass the version your device is on when not starting from normal mode"
+    exit
+fi
+
+if [ "$(get_device_mode)" = "ramdisk" ]; then
+    # If a device is in ramdisk mode, perhaps iproxy is still running?
+    _kill_if_running iproxy
+    echo "[*] Rebooting device in SSH Ramdisk"
+    if [ "$os" = 'Linux' ]; then
+        sudo "$dir"/iproxy 2222 22 &
     else
-        version=$2
+        "$dir"/iproxy 2222 22 &
     fi
-else
-    _wait normal
+    sleep 2
+    remote_cmd "/usr/sbin/nvram auto-boot=false"
+    remote_cmd "/sbin/reboot"
+    _kill_if_running iproxy
+    _wait recovery
+fi
+
+if [ "$(get_device_mode)" = "normal" ]; then
     version=$(_info normal ProductVersion)
     arch=$(_info normal CPUArchitecture)
     if [ "$arch" = "arm64e" ]; then
@@ -326,15 +478,47 @@ echo "[*] Getting device info..."
 cpid=$(_info recovery CPID)
 model=$(_info recovery MODEL)
 deviceid=$(_info recovery PRODUCT)
+
+if [ "$dfuhelper" = "1" ]; then
+    echo "[*] Running DFU helper"
+    _dfuhelper "$cpid"
+    exit
+fi
+
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
+    if [[ "$deviceid" == *"iPad"* ]]; then
+        device_os=iPadOS
+        device=iPad
+    elif [[ "$deviceid" == *"iPod"* ]]; then
+        device_os=iOS
+        device=iPod
+    else
+        device_os=iOS
+        device=iPhone
+    fi
+
+    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
+    if [ "$buildid" == "19B75" ]; then
+        buildid=19B74
+    fi
+    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+fi
+
+if [ "$restorerootfs" = "1" ]; then
+    rm -rf "blobs/"$deviceid"-"$version".shsh2" "boot-$deviceid" work .tweaksinstalled
+    rm -rf ramdisk/sshramdisk
 fi
 
 # Have the user put the device into DFU
-if [ ! "$1" = '--dfu' ] && [ ! "$1" = '--tweaks' ]; then
-    _dfuhelper
+if [ "$(get_device_mode)" != "dfu" ]; then
+    recovery_fix_auto_boot;
+    _dfuhelper "$cpid" || {
+        echo "[-] failed to enter DFU mode, run palera1n.sh again"
+        exit -1
+    }
 fi
 sleep 2
 
@@ -342,21 +526,27 @@ sleep 2
 # Ramdisk
 # ============
 
-# Dump blobs, and install pogo if needed
+# Dump blobs, and install pogo if needed 
 if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     mkdir -p blobs
 
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 15.6 `if [ ! "$1" = '--tweaks' ]; then echo "rootless"; fi`
+    ./sshrd.sh 15.6 `if [ -z "$tweaks" ]; then echo "rootless"; fi`
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
     cd ..
-    # if known hosts file exists, remove it
+    # remove special lines from known_hosts
     if [ -f ~/.ssh/known_hosts ]; then
-        rm ~/.ssh/known_hosts
+        if [ "$os" = "Darwin" ]; then
+            sed -i.bak '/localhost/d' ~/.ssh/known_hosts
+            sed -i.bak '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        elif [ "$os" = "Linux" ]; then
+            sed -i '/localhost/d' ~/.ssh/known_hosts
+            sed -i '/127\.0\.0\.1/d' ~/.ssh/known_hosts
+        fi
     fi
 
     # Execute the commands once the rd is booted
@@ -366,75 +556,24 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/iproxy 2222 22 &
     fi
 
-    if ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); then
-        echo "[*] Waiting for the ramdisk to finish booting"
-    fi
-
-    while ! ("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "echo connected" &> /dev/null); do
+    while ! (remote_cmd "echo connected" &> /dev/null); do
         sleep 1
     done
 
-    echo "[*] Dumping blobs and installing Pogo"
-    sleep 1
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/mount_filesystems"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
-    "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
-    rm dump.raw
-
-    if [[ "$@" == *"--semi-tethered"* ]]; then
-        if [[ ! "$@" == *"--skip-fakefs"* ]]; then
-            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1"
-            sleep 2
-            if [[ "$@" == *"--no-baseband"* ]]; then 
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s7 /mnt8"
-            else
-                "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/mount_apfs /dev/disk0s1s8 /mnt8"
-            fi
-            
-            sleep 1
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp -a /mnt1/. /mnt8/"
-            sleep 1
-            echo "[*] fakefs created, continuing..."
+    echo "[*] Testing for baseband presence"
+    if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x7001"* ]; then
+        disk=7
+    elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
+        if [ "${cpid}" == *"0x7001"* ]; then
+            disk=6
+        else
+            disk=7
         fi
     fi
 
-    if [[ ! "$@" == *"--no-install"* ]]; then
-        tipsdir=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
-        sleep 1
-        if [ "$tipsdir" = "" ]; then
-            echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
-            "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
-            sleep 1
-            _kill_if_running iproxy
-            exit
-        fi
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/mkdir -p /mnt1/private/var/root/temp"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -r /usr/local/bin/loader.app/* /mnt1/private/var/root/temp"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/rm -rf /mnt1/private/var/root/temp/Info.plist /mnt1/private/var/root/temp/Base.lproj /mnt1/private/var/root/temp/PkgInfo"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/cp -rf /mnt1/private/var/root/temp/* $tipsdir"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/rm -rf /mnt1/private/var/root/temp"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 33 $tipsdir/Tips"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper"
-        sleep 1
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 $tipsdir/PogoHelper"
-    fi
+    remote_cmd "/usr/bin/mount_filesystems"
 
-    #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram allow-root-hash-mismatch=1"
-    #"$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram root-live-fs=1"
-    if [[ "$@" == *"--semi-tethered"* ]]; then
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
-    else
-        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
-    fi
-
-    has_active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/active" 2> /dev/null)
+    has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
     if [ ! "$has_active" = "/mnt6/active" ]; then
         echo "[!] Active file does not exist! Please use SSH to create it"
         echo "    /mnt6/active should contain the name of the UUID in /mnt6"
@@ -442,46 +581,126 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         echo "    ssh root@localhost -p 2222"
         exit
     fi
-    active=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cat /mnt6/active" 2> /dev/null)
+    active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
 
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/bin/chmod 755 /mnt1/private/var/root/Kernel15Patcher.ios"
+    if [ "$restorerootfs" = "1" ]; then
+        echo "[*] Removing Jailbreak"
+        remote_cmd "/sbin/apfs_deletefs disk0s1s${disk} > /dev/null || true"
+        remote_cmd "rm -f /mnt2/jb"
+        remote_cmd "rm -rf /mnt2/cache /mnt2/lib"
+        remote_cmd "rm -rf /mnt6/$active/procursus"
+        remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache 2> /dev/null || true"
+        remote_cmd "/bin/sync"
+        remote_cmd "/usr/sbin/nvram auto-boot=true"
+        rm -f BuildManifest.plist
+        echo "[*] Done! Rebooting your device"
+        remote_cmd "/sbin/reboot"
+        exit;
+    fi
+
+    echo "[*] Dumping blobs and installing Pogo"
+    sleep 1
+    remote_cmd "cat /dev/rdisk1" | dd of=dump.raw bs=256 count=$((0x4000)) 
+    "$dir"/img4tool --convert -s blobs/"$deviceid"-"$version".shsh2 dump.raw
+    rm dump.raw
+
+    if [ "$semi_tethered" = "1" ]; then
+        if [ -z "$skip_fakefs" ]; then
+            echo "[*] Creating fakefs, this may take a while (up to 10 minutes)"
+            remote_cmd "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1" && {
+                
+            sleep 2
+            remote_cmd "/sbin/mount_apfs /dev/disk0s1s${disk} /mnt8"
+            
+            sleep 1
+            remote_cmd "cp -a /mnt1/. /mnt8/"
+            sleep 1
+            echo "[*] fakefs created, continuing..."
+            } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
+        fi
+    fi
+
+    if [ -z "$no_install" ]; then
+        tipsdir=$(remote_cmd "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
+        sleep 1
+        if [ "$tipsdir" = "" ]; then
+            echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
+            remote_cmd "/sbin/reboot"
+            sleep 1
+            _kill_if_running iproxy
+            exit
+        fi
+        remote_cmd "/bin/mkdir -p /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/bin/cp -r /usr/local/bin/loader.app/* /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp/Info.plist /mnt1/private/var/root/temp/Base.lproj /mnt1/private/var/root/temp/PkgInfo"
+        sleep 1
+        remote_cmd "/bin/cp -rf /mnt1/private/var/root/temp/* $tipsdir"
+        sleep 1
+        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/usr/sbin/chown 33 $tipsdir/Tips"
+        sleep 1
+        remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/PogoHelper"
+        sleep 1
+        remote_cmd "/usr/sbin/chown 0 $tipsdir/PogoHelper"
+    fi
+
+    #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
+    #remote_cmd "/usr/sbin/nvram root-live-fs=1"
+    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
+        remote_cmd "/usr/sbin/nvram auto-boot=true"
+    else
+        remote_cmd "/usr/sbin/nvram auto-boot=false"
+    fi
+
+    remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
+    remote_cmd "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
+    remote_cmd "/bin/chmod 755 /mnt1/private/var/root/Kernel15Patcher.ios"
 
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
+        remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    else
+        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
+    fi
     sleep 1
+
     # download the kernel
     echo "[*] Downloading BuildManifest"
     "$dir"/pzb -g BuildManifest.plist "$ipswurl"
+
     echo "[*] Downloading kernelcache"
     "$dir"/pzb -g "$(awk "/""$model""/{x=1}x&&/kernelcache.release/{print;exit}" BuildManifest.plist | grep '<string>' | cut -d\> -f2 | cut -d\< -f1)" "$ipswurl"
+    
     mv kernelcache.release.* work/kernelcache
-    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]]|| [[ "$deviceid" == *'iPad5'* ]]; then
+    if [[ "$deviceid" == "iPhone8"* ]] || [[ "$deviceid" == "iPad6"* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw --extra work/kpp.bin
     else
         python3 -m pyimg4 im4p extract -i work/kernelcache -o work/kcache.raw
     fi
     sleep 1
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/mnt1/private/var/root/Kernel15Patcher.ios /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
-    "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -o -e -u
+    remote_cp work/kcache.raw root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
+    remote_cmd "/mnt1/private/var/root/Kernel15Patcher.ios /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched"
+    remote_cp root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched work/
+    "$dir"/Kernel64Patcher work/kcache.patched work/kcache.patched2 -e
     sleep 1
     if [[ "$deviceid" == *'iPhone8'* ]] || [[ "$deviceid" == *'iPad6'* ]] || [[ "$deviceid" == *'iPad5'* ]]; then
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --extra work/kpp.bin --lzss
-    elif [[ $1 == *"--tweaks"* ]]; then
+    else
         python3 -m pyimg4 im4p create -i work/kcache.patched2 -o work/kcache.im4p -f krnl --lzss
     fi
     sleep 1
-    "$dir"/sshpass -p 'alpine' scp -o StrictHostKeyChecking=no -P2222 work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd -M /mnt6/$active/System/Library/Caches/apticket.der"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
+    remote_cp work/kcache.im4p root@localhost:/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/
+    remote_cmd "img4 -i /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p -o /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd -M /mnt6/$active/System/Library/Caches/apticket.der"
+    remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p"
 
     sleep 1
-    has_kernelcachd=$("$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "ls /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" 2> /dev/null)
+    has_kernelcachd=$(remote_cmd "ls /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" 2> /dev/null)
     if [ "$has_kernelcachd" = "/mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd" ]; then
         echo "[*] Custom kernelcache now exists!"
     else
@@ -493,17 +712,17 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     sleep 2
     echo "[*] Done! Rebooting your device"
-    "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/sbin/reboot"
+    remote_cmd "/sbin/reboot"
     sleep 1
     _kill_if_running iproxy
 
-    if [[ "$@" == *"--semi-tethered"* ]]; then
+    if [ "$semi_tethered" = "1" ]; then
         _wait normal
         sleep 5
 
         echo "[*] Switching device into recovery mode..."
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
-    elif [ ! "$1" = '--tweaks' ]; then
+    elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
 
@@ -511,7 +730,6 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    sleep 10
     _dfuhelper
     sleep 2
 fi
@@ -531,7 +749,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
     mkdir boot-"$deviceid"
 
     echo "[*] Converting blob"
-    "$dir"/img4tool -e -s $(pwd)/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
+    "$dir"/img4tool -e -s "$(pwd)"/blobs/"$deviceid"-"$version".shsh2 -m work/IM4M
     cd work
 
     echo "[*] Downloading BuildManifest"
@@ -547,31 +765,23 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
 
     echo "[*] Patching and signing iBSS/iBoot"
     "$dir"/iBoot64Patcher iBSS.dec iBSS.patched
-    if [[ "$@" == *"--semi-tethered"* ]]; then
-        if [[ "$@" == *"--no-baseband"* ]]; then 
-            if [[ "$@" == *"--verbose"* ]]; then
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s7'
-            else
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s7'
-            fi
+    if [ "$semi_tethered" = "1" ]; then
+        if [ "$verbose" = "1" ]; then
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "-v keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         else
-            if [[ "$@" == *"--verbose"* ]]; then
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e rd=disk0s1s8'
-            else
-                "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e rd=disk0s1s8'
-            fi
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b "keepsyms=1 debug=0x2014e rd=disk0s1s${disk}" -f
         fi
     else
-        if [[ "$@" == *"--verbose"* ]]; then
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e'
+        if [ "$verbose" = "1" ]; then
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b '-v keepsyms=1 debug=0x2014e' -f
         else
-            "$dir"/iBoot64Patcherfsboot ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e'
+            "$dir"/iBoot64Patcher ibot.dec ibot.patched -b 'keepsyms=1 debug=0x2014e' -f
         fi
     fi
     if [ "$os" = 'Linux' ]; then
         sed -i 's/\/\kernelcache/\/\kernelcachd/g' ibot.patched
     else
-        LC_ALL=C sed -i .bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
+        LC_ALL=C sed -i.bak -e 's/s\/\kernelcache/s\/\kernelcachd/g' ibot.patched
         rm *.bak
     fi
     cd ..
@@ -605,16 +815,20 @@ else
 fi
 
 if [ "$os" = 'Darwin' ]; then
-    if [ ! "$1" = '--dfu' ]; then
-        defaults write -g ignore-devices -bool false
-        defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
-        killall Finder
-    fi
+    defaults write -g ignore-devices -bool false
+    defaults write com.apple.AMPDevicesAgent dontAutomaticallySyncIPods -bool false
+    killall Finder
 fi
 
 cd logs
-for file in *.log; do
-    mv "$file" SUCCESS_${file}
+for file in *.log; do 
+    if [[ "$file" != "SUCCESS_"* ]]; then 
+        if [ "$os" = 'Linux' ]; then
+            sudo mv "$file" SUCCESS_${file}
+        else
+            mv "$file" SUCCESS_${file}
+        fi
+    fi
 done
 cd ..
 
