@@ -130,18 +130,8 @@ parse_cmdline() {
 }
 
 recovery_fix_auto_boot() {
-    if [ "$tweaks" = "1" ]; then
-        "$dir"/irecovery -c "setenv auto-boot false"
-        "$dir"/irecovery -c "saveenv"
-    else
-        "$dir"/irecovery -c "setenv auto-boot true"
-        "$dir"/irecovery -c "saveenv"
-    fi
-
-    if [ "$semi_tethered" = "1" ]; then
-        "$dir"/irecovery -c "setenv auto-boot true"
-        "$dir"/irecovery -c "saveenv"
-    fi
+    "$dir"/irecovery -c "setenv auto-boot true"
+    "$dir"/irecovery -c "saveenv"
 }
 
 _info() {
@@ -314,8 +304,23 @@ fi
 
 for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
-        echo "[-] Command '${cmd}' not installed, please install it!";
-        cmd_not_found=1
+        if [ "$cmd" = "python3" ]; then
+            echo "[-] Command '${cmd}' not installed, please install it!";
+            if [ "$os" = 'Darwin' ]; then
+                if [ ! -e python-3.7.6-macosx10.6.pkg ]; then
+                    curl -k https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg -o python-3.7.6-macosx10.6.pkg
+                fi
+                open -W python-3.7.6-macosx10.6.pkg
+            fi
+            if ! command -v "${cmd}" > /dev/null; then
+                cmd_not_found=1
+            fi
+        else
+            if ! command -v "${cmd}" > /dev/null; then
+                echo "[-] Command '${cmd}' not installed, please install it!";
+                cmd_not_found=1
+            fi
+        fi
     fi
 done
 if [ "$cmd_not_found" = "1" ]; then
@@ -329,15 +334,13 @@ fi
 
 if [ ! -e "$dir"/gaster ]; then
     curl -k -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
-    unzip gaster-"$os".zip
+    "$dir"/unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
 fi
 
 # Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-    echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
-    read -n 1 -s
     python3 -m pip install pyimg4
 fi
 
@@ -624,11 +627,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
-    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
-        remote_cmd "/usr/sbin/nvram auto-boot=true"
-    else
-        remote_cmd "/usr/sbin/nvram auto-boot=false"
-    fi
+    remote_cmd "/usr/sbin/nvram auto-boot=true"
 
     remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
     remote_cmd "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
