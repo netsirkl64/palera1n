@@ -130,8 +130,18 @@ parse_cmdline() {
 }
 
 recovery_fix_auto_boot() {
-    "$dir"/irecovery -c "setenv auto-boot true"
-    "$dir"/irecovery -c "saveenv"
+    if [ "$1" = "--tweaks" ]; then
+        "$dir"/irecovery -c "setenv auto-boot false"
+        "$dir"/irecovery -c "saveenv"
+    else
+        "$dir"/irecovery -c "setenv auto-boot true"
+        "$dir"/irecovery -c "saveenv"
+    fi
+
+    if [[ "$@" == *"--semi-tethered"* ]]; then
+        "$dir"/irecovery -c "setenv auto-boot true"
+        "$dir"/irecovery -c "saveenv"
+    fi
 }
 
 _info() {
@@ -627,7 +637,11 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
-    remote_cmd "/usr/sbin/nvram auto-boot=true"
+    if [[ "$@" == *"--semi-tethered"* ]]; then
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
+    else
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
+    fi
 
     remote_cp binaries/Kernel15Patcher.ios root@localhost:/mnt1/private/var/root/Kernel15Patcher.ios
     remote_cmd "/usr/sbin/chown 0 /mnt1/private/var/root/Kernel15Patcher.ios"
@@ -636,11 +650,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     # lets actually patch the kernel
     echo "[*] Patching the kernel"
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-    if [ "$semi_tethered" = "1" ] || [ -z "$tweaks" ]; then
-        remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
-    else
-        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
-    fi
+    remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
     sleep 1
 
     # download the kernel
