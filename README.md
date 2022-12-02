@@ -18,38 +18,6 @@ This version of palera1n adds Cydia Package Manager and Zebra to the jailbreak .
 It boots the device with multiple patches required. On first run, it'll boot a ramdisk which dumps your onboard blob, creates a fakefs (if using semi tethered), installs the loader app, and patches your kernel.
 
 # Issues
-### SnowBoard 1.5.1 beta1 tweak 
-It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
-
-You must install this tweak from the .deb file using ssh with these commands.
-```Bash
-cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt install -y ldid curl jq &&
-ldid -s /usr/lib/librtmp.1.dylib &&
-curl https://debs.kristen.lc/com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb -o com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
-dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb
-```
-The tweak does not work right away, you must kickstart your phone from the Tips app.
-
-### Viola 1.9.7 theme
-It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
-
-We should also mention that you should please go and support the creator of this theme and pay for it proper.
-
-This is just an alternative to installing from sileo package manager if that is not working for you.
-
-You must install this tweak from the .deb file using ssh with these commands.
-```Bash
-cd /var/mobile/Library/Mobile\ Documents/com~apple~CloudDocs/Downloads &&
-apt install -y ldid curl jq &&
-ldid -s /usr/lib/librtmp.1.dylib &&
-curl https://debs.kristen.lc/com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb -o com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
-dpkg -i com.pwnd2e.snowboard_1.5.1Beta1_iphoneos-arm.deb &&
-curl https://debs.kristen.lc/com.bousrih.viola_1.9.7_iphoneos-arm.deb -o com.bousrih.viola_1.9.7_iphoneos-arm.deb &&
-dpkg -i com.bousrih.viola_1.9.7_iphoneos-arm.deb
-```
-The tweak does not work right away, you must kickstart your phone from the Tips app.
-
 ### NetworkManager 1.0.2 tweak
 It works great on iOS 15 with the palera1n jailbreak as long as you do not install it from Sileo.
 
