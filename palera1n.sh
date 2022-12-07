@@ -69,9 +69,13 @@ parse_opt() {
             ;;
         --tweaks)
             tweaks=1
+            semi_tethered=1
             ;;
         --dfuhelper)
             dfuhelper=1
+            ;;
+        --skip-fakefs)
+            skip_fakefs=1
             ;;
         --no-baseband)
             no_baseband=1
@@ -700,11 +704,7 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     _kill_if_running iproxy
 
     if [ "$semi_tethered" = "1" ]; then
-        _wait normal
-        sleep 5
-
-        echo "[*] Switching device into recovery mode..."
-        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        sleep 1
     elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
