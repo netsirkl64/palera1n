@@ -492,10 +492,39 @@ if [ "$dfuhelper" = "1" ]; then
     exit
 fi
 
+sshrd19G69="0"
+
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+    if [ "$version" = "15.6" ]; then
+        echo "!!! WARNING WARNING WARNING !!!"
+        echo "This version you have set is 15.6, which is the STABLE RELEASE of iOS 15.6."
+        echo "THIS MEANS THAT IF UR DEVICE IS RUNNING 15.6 RC 1, IT WILL NOT BOOT"
+        echo "You have two options, you can proceed with 15.6, or you can change it to 19G69."
+        echo "IF YOU ARE RUNNING IOS 15.6 RC 1 19G69 TYPE 'Yes'"
+        read -r answer
+        if [ "$answer" = 'Yes' ]; then
+            echo "Are you REALLY sure? WE WARNED YOU!"
+            echo "Type 'Yes, I am sure' to continue"
+            read -r answer
+            if [ "$answer" = 'Yes, I am sure' ]; then
+                echo "[*] Enabling 19G69"
+                ipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;19G69.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+                sshrd19G69="1"
+            else
+                ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+            fi
+        fi
+        ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+    else
+        if [ "$version" = "19G69" ]; then
+            ipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;19G69.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+            sshrd19G69="1"
+        else
+            ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+        fi
+    fi
 fi
 
 if [ "$restorerootfs" = "1" ]; then
@@ -524,7 +553,11 @@ if [ ! -f blobs/"$deviceid"-"$version".shsh2 ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh 15.6 `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    if [ "$sshrd19G69" = "1" ]; then
+        ./sshrd.sh 19G69 `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    else
+        ./sshrd.sh "$version" `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    fi
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
