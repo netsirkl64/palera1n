@@ -384,7 +384,9 @@ if [ "$debug" = "1" ]; then
 fi
 
 if [ "$clean" = "1" ]; then
-    rm -rf boot* work .tweaksinstalled
+    sudo rm -rf boot* work .tweaksinstalled
+    sudo rm -rf blobs
+    sudo rm -rf sshramdisk/ramdisk
     echo "[*] Removed the created boot files"
     exit
 fi
@@ -517,8 +519,8 @@ else
 fi
 
 if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".shsh2" "boot-$deviceid" work .tweaksinstalled
-    rm -rf ramdisk/sshramdisk
+    sudo rm -rf "blobs/"$deviceid"-"$version".shsh2" "boot-$deviceid" work .tweaksinstalled
+    sudo rm -rf ramdisk/sshramdisk
 fi
 
 # Have the user put the device into DFU
@@ -782,7 +784,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
 
         if [[ "$version" == *"16"* ]]; then
-            remote_cmd "rm -f /mnt$di/System/Library/Caches/com.apple.dyld"
+            remote_cmd "rm -rf /mnt$di/System/Library/Caches/com.apple.dyld"
             remote_cmd "ln -s /System/Cryptexes/OS/System/Library/Caches/com.apple.dyld /mnt$di/System/Library/Caches/"
         fi
 
