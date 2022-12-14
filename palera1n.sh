@@ -72,7 +72,6 @@ parse_opt() {
             ;;
         --tweaks)
             tweaks=1
-            semi_tethered=1
             ;;
         --semi-tethered)
             semi_tethered=1
