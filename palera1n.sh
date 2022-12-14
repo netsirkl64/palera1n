@@ -701,7 +701,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
     fi
 
-    #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
+    remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
     if [[ "$@" == *"--semi-tethered"* ]]; then
         "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
