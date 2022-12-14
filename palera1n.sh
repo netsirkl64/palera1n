@@ -33,14 +33,11 @@ remote_cp() {
 }
 
 step() {
-    for i in $(seq "$1" -1 0); do
-        if [ "$(get_device_mode)" = "dfu" ]; then
-            break
-        fi
-        printf '\r\e[K\e[1;36m%s (%d)' "$2" "$i"
+    for i in $(seq "$1" -1 1); do
+        printf '\r\e[1;36m%s (%d) ' "$2" "$i"
         sleep 1
     done
-    printf '\e[0m\n'
+    printf '\r\e[0m%s (0)\n' "$2"
 }
 
 print_help() {
@@ -140,7 +137,7 @@ parse_cmdline() {
 }
 
 recovery_fix_auto_boot() {
-    if [ "$tweaks" = "1" ]; then
+    if [ "$1" = "--tweaks" ]; then
         "$dir"/irecovery -c "setenv auto-boot false"
         "$dir"/irecovery -c "saveenv"
     else
@@ -148,7 +145,7 @@ recovery_fix_auto_boot() {
         "$dir"/irecovery -c "saveenv"
     fi
 
-    if [ "$semi_tethered" = "1" ]; then
+    if [[ "$@" == *"--semi-tethered"* ]]; then
         "$dir"/irecovery -c "setenv auto-boot true"
         "$dir"/irecovery -c "saveenv"
     fi
@@ -705,14 +702,10 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
     #remote_cmd "/usr/sbin/nvram root-live-fs=1"
-    if [ "$tweaks" = "1" ]; then
-        if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "/usr/sbin/nvram auto-boot=true"
-        else
-            remote_cmd "/usr/sbin/nvram auto-boot=false"
-        fi
+    if [[ "$@" == *"--semi-tethered"* ]]; then
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=true"
     else
-        remote_cmd "/usr/sbin/nvram auto-boot=true"
+        "$dir"/sshpass -p 'alpine' ssh -o StrictHostKeyChecking=no -p2222 root@localhost "/usr/sbin/nvram auto-boot=false"
     fi
 
     # lets actually patch the kernel
@@ -869,7 +862,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     rm .rd_in_progress
 
     sleep 2
-    echo "[*] Phase 1 done! Rebooting your device (if it doesn't reboot, you may force reboot)"
+    echo "[*] Done! Rebooting your device"
     remote_cmd "/sbin/reboot"
     sleep 1
     _kill_if_running iproxy
