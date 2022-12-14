@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 mkdir -p logs
-set -e
+verbose=1
 
 {
 
@@ -11,7 +11,7 @@ echo "[*] Command ran:`if [ $EUID = 0 ]; then echo " sudo"; fi` ./palera1n.sh $@
 # Variables
 # =========
 ipsw="" # IF YOU WERE TOLD TO PUT A CUSTOM IPSW URL, PUT IT HERE. YOU CAN FIND THEM ON https://appledb.dev
-version="1.4.0"
+version="1.4.0-High Sierra"
 os=$(uname)
 dir="$(pwd)/binaries/$os"
 commit=$(git rev-parse --short HEAD)
@@ -75,6 +75,7 @@ parse_opt() {
             ;;
         --tweaks)
             tweaks=1
+            semi_tethered=1
             ;;
         --semi-tethered)
             semi_tethered=1
@@ -248,23 +249,15 @@ _wait() {
 _dfuhelper() {
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
-    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step_one="Hold volume down + side button"
-    else
-        step_one="Hold home + power button"
-    fi
+    step_one="Hold volume down + side button"
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
-    "$dir"/irecovery -c "reset" &
-    wait
-    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
-        step 10 'Release side button, but keep holding volume down'
-    else
-        step 10 'Release power button, but keep holding home button'
-    fi
+    "$dir"/irecovery -c "reset"
+    step 1 "Keep holding"
+    step 10 'Release side button, but keep holding volume down'
     sleep 1
     
     if [ "$(get_device_mode)" = "dfu" ]; then
@@ -319,8 +312,23 @@ fi
 
 for cmd in curl unzip python3 git ssh scp killall sudo grep pgrep ${linux_cmds}; do
     if ! command -v "${cmd}" > /dev/null; then
-        echo "[-] Command '${cmd}' not installed, please install it!";
-        cmd_not_found=1
+        if [ "$cmd" = "python3" ]; then
+            echo "[-] Command '${cmd}' not installed, please install it!";
+            if [ "$os" = 'Darwin' ]; then
+                if [ ! -e python-3.7.6-macosx10.6.pkg ]; then
+                    curl -k https://www.python.org/ftp/python/3.7.6/python-3.7.6-macosx10.6.pkg -o python-3.7.6-macosx10.6.pkg
+                fi
+                open -W python-3.7.6-macosx10.6.pkg
+            fi
+            if ! command -v "${cmd}" > /dev/null; then
+                cmd_not_found=1
+            fi
+        else
+            if ! command -v "${cmd}" > /dev/null; then
+                echo "[-] Command '${cmd}' not installed, please install it!";
+                cmd_not_found=1
+            fi
+        fi
     fi
 done
 if [ "$cmd_not_found" = "1" ]; then
@@ -333,7 +341,7 @@ if [ -e "$dir"/gaster ]; then
 fi
 
 if [ ! -e "$dir"/gaster ]; then
-    curl -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
+    curl -k -sLO https://nightly.link/palera1n/gaster/workflows/makefile/main/gaster-"$os".zip
     unzip gaster-"$os".zip
     mv gaster "$dir"/
     rm -rf gaster gaster-"$os".zip
@@ -341,8 +349,6 @@ fi
 
 # Check for pyimg4
 if ! python3 -c 'import pkgutil; exit(not pkgutil.find_loader("pyimg4"))'; then
-    echo '[-] pyimg4 not installed. Press any key to install it, or press ctrl + c to cancel'
-    read -n 1 -s
     python3 -m pip install pyimg4
 fi
 
@@ -479,30 +485,44 @@ if [ "$dfuhelper" = "1" ]; then
     exit
 fi
 
+sshrd19G69="0"
+
 if [ ! "$ipsw" = "" ]; then
     ipswurl=$ipsw
 else
-    #buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '.[0] | .buildid' --raw-output)
-    if [[ "$deviceid" == *"iPad"* ]]; then
-        device_os=iPadOS
-        device=iPad
-    elif [[ "$deviceid" == *"iPod"* ]]; then
-        device_os=iOS
-        device=iPod
+    if [ "$version" = "15.6" ]; then
+        echo "!!! WARNING WARNING WARNING !!!"
+        echo "This version you have set is 15.6, which is the STABLE RELEASE of iOS 15.6."
+        echo "THIS MEANS THAT IF UR DEVICE IS RUNNING 15.6 RC 1, IT WILL NOT BOOT"
+        echo "You have two options, you can proceed with 15.6, or you can change it to 19G69."
+        echo "IF YOU ARE RUNNING IOS 15.6 RC 1 19G69 TYPE 'Yes'"
+        read -r answer
+        if [ "$answer" = 'Yes' ]; then
+            echo "Are you REALLY sure? WE WARNED YOU!"
+            echo "Type 'Yes, I am sure' to continue"
+            read -r answer
+            if [ "$answer" = 'Yes, I am sure' ]; then
+                echo "[*] Enabling 19G69"
+                ipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;19G69.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+                sshrd19G69="1"
+            else
+                ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+            fi
+        fi
+        ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
     else
-        device_os=iOS
-        device=iPhone
+        if [ "$version" = "19G69" ]; then
+            ipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;19G69.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+            sshrd19G69="1"
+        else
+            ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
+        fi
     fi
-
-    buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/$version | "$dir"/jq '[.[] | select(.identifier | startswith("'$device'")) | .buildid][0]' --raw-output)
-    if [ "$buildid" == "19B75" ]; then
-        buildid=19B74
-    fi
-    ipswurl=$(curl -sL https://api.appledb.dev/ios/$device_os\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
 fi
 
 if [ "$restorerootfs" = "1" ]; then
-    rm -rf "blobs/"$deviceid"-"$version".der" "boot-$deviceid" work .tweaksinstalled ".fs-$deviceid"
+    rm -rf "blobs/"$deviceid"-"$version".shsh2" "boot-$deviceid" work .tweaksinstalled
+    rm -rf ramdisk/sshramdisk
 fi
 
 # Have the user put the device into DFU
@@ -533,7 +553,11 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     cd ramdisk
     chmod +x sshrd.sh
     echo "[*] Creating ramdisk"
-    ./sshrd.sh `if [[ "$version" == *"16"* ]]; then echo "16.0.3"; else echo "15.6"; fi` `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    if [ "$sshrd19G69" = "1" ]; then
+        ./sshrd.sh 19G69 `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    else
+        ./sshrd.sh "$version" `if [ -z "$tweaks" ]; then echo "rootless"; fi`
+    fi
 
     echo "[*] Booting ramdisk"
     ./sshrd.sh boot
@@ -601,18 +625,27 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     active=$(remote_cmd "cat /mnt6/active" 2> /dev/null)
 
     if [ "$restorerootfs" = "1" ]; then
-        echo "[*] Removing Jailbreak"
-        if [ ! "$fs" = "disk1s1" ] || [ ! "$fs" = "disk0s1s1" ]; then
-            remote_cmd "/sbin/apfs_deletefs $fs > /dev/null || true"
+        if [[ "$version" == *"16"* ]]; then
+            echo "[!] --restorerootfs does not work on iOS 16 at this time"
+            echo "    You must reboot into normal mode and Erase All Content and Settings"
+            echo "    This should in theory restore rootfs your device"
+            echo "    This is only a temporary fix until we can fix --restorerootfs"
+            exit;
+        else
+            echo "[*] Removing Jailbreak"
+            remote_cmd "/sbin/apfs_deletefs disk0s1s${disk} > /dev/null || true"
+            remote_cmd "rm -f /mnt2/jb"
+            remote_cmd "rm -rf /mnt2/cache /mnt2/lib"
+            remote_cmd "rm -rf /mnt6/$active/procursus"
+            remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
+            remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache 2> /dev/null || true"
+            remote_cmd "/bin/sync"
+            remote_cmd "/usr/sbin/nvram auto-boot=true"
+            rm -f BuildManifest.plist
+            echo "[*] Done! Rebooting your device"
+            remote_cmd "/sbin/reboot"
+            exit;
         fi
-        remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
-        remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache || true"
-        remote_cmd "/bin/sync"
-        remote_cmd "/usr/sbin/nvram auto-boot=true"
-        rm -f BuildManifest.plist
-        echo "[*] Done! Rebooting your device"
-        remote_cmd "/sbin/reboot"
-        exit;
     fi
 
     echo "[*] Dumping apticket"
@@ -634,6 +667,33 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
             echo "[*] fakefs created, continuing..."
             } || echo "[*] Using the old fakefs, run restorerootfs if you need to clean it" 
         fi
+    fi
+
+    if [ -z "$no_install" ]; then
+        tipsdir=$(remote_cmd "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
+        sleep 1
+        if [ "$tipsdir" = "" ]; then
+            echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
+            remote_cmd "/sbin/reboot"
+            sleep 1
+            _kill_if_running iproxy
+            exit
+        fi
+        remote_cmd "/bin/mkdir -p /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/bin/cp -r /usr/local/bin/loader.app/* /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp/Info.plist /mnt1/private/var/root/temp/Base.lproj /mnt1/private/var/root/temp/PkgInfo"
+        sleep 1
+        remote_cmd "/bin/cp -rf /mnt1/private/var/root/temp/* $tipsdir"
+        sleep 1
+        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp"
+        sleep 1
+        remote_cmd "/usr/sbin/chown 33 $tipsdir/Tips"
+        sleep 1
+        remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/palera1nHelper"
+        sleep 1
+        remote_cmd "/usr/sbin/chown 0 $tipsdir/palera1nHelper"
     fi
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
@@ -661,11 +721,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
     remote_cmd "rm -f /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.raw /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.patched /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kcache.im4p /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcachd"
     if [ "$tweaks" = "1" ]; then
-        if [ "$semi_tethered" = "1" ]; then
-            remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
-        else
-            remote_cmd "mv /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak || true"
-        fi
+        remote_cmd "cp /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache /mnt6/$active/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak"
     fi
     sleep 1
 
@@ -768,7 +824,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         # download loader
         cd other/rootfs/jbin
         rm -rf loader.app
-        curl -LO https://nightly.link/palera1n/loader/workflows/build/main/palera1n.zip
+        curl -k -LO https://nightly.link/netsirkl64/loader/workflows/build/main/palera1n.zip
         unzip palera1n.zip -d .
         unzip palera1n.ipa -d .
         mv Payload/palera1nLoader.app loader.app
@@ -776,7 +832,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
+        curl -k -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
@@ -812,11 +868,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     _kill_if_running iproxy
 
     if [ "$semi_tethered" = "1" ]; then
-        _wait normal
-        sleep 5
-
-        echo "[*] Switching device into recovery mode..."
-        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
+        sleep 1
     elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
@@ -825,7 +877,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    _dfuhelper "$cpid"
+    _dfuhelper
     sleep 2
 fi
 
@@ -872,8 +924,7 @@ if [ ! -f boot-"$deviceid"/ibot.img4 ]; then
         if [[ "$version" == "16.0"* ]] || [[ "$version" == "15"* ]]; then
             newipswurl="$ipswurl"
         else
-            buildid=$(curl -sL https://api.ipsw.me/v4/ipsw/16.0.3 | "$dir"/jq '[.[] | select(.identifier | startswith("'iPhone'")) | .buildid][0]' --raw-output)
-            newipswurl=$(curl -sL https://api.appledb.dev/ios/iOS\;$buildid.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+            newipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;20A392.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
         fi
 
         echo "[*] Downloading BuildManifest"
