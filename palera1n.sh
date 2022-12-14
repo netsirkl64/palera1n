@@ -611,8 +611,13 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         echo "$disk" > .fs-"$deviceid"
     fi
 
-    # mount filesystems, no user data partition
-    remote_cmd "/usr/bin/mount_filesystems_nouser"
+    if [[ "$version" == *"16"* ]]; then
+        # mount filesystems, no user data partition
+        remote_cmd "/usr/bin/mount_filesystems_nouser"
+    else
+        # mount filesystems
+        remote_cmd "/usr/bin/mount_filesystems"
+    fi
 
     has_active=$(remote_cmd "ls /mnt6/active" 2> /dev/null)
     if [ ! "$has_active" = "/mnt6/active" ]; then
@@ -669,31 +674,33 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         fi
     fi
 
-    if [ -z "$no_install" ]; then
-        tipsdir=$(remote_cmd "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
-        sleep 1
-        if [ "$tipsdir" = "" ]; then
-            echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
-            remote_cmd "/sbin/reboot"
+    if [[ ! "$version" == *"16"* ]]; then
+        if [ -z "$no_install" ]; then
+            tipsdir=$(remote_cmd "/usr/bin/find /mnt2/containers/Bundle/Application/ -name 'Tips.app'" 2> /dev/null)
             sleep 1
-            _kill_if_running iproxy
-            exit
+            if [ "$tipsdir" = "" ]; then
+                echo "[!] Tips is not installed. Once your device reboots, install Tips from the App Store and retry"
+                remote_cmd "/sbin/reboot"
+                sleep 1
+                _kill_if_running iproxy
+                exit
+            fi
+            remote_cmd "/bin/mkdir -p /mnt1/private/var/root/temp"
+            sleep 1
+            remote_cmd "/bin/cp -r /usr/local/bin/loader.app/* /mnt1/private/var/root/temp"
+            sleep 1
+            remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp/Info.plist /mnt1/private/var/root/temp/Base.lproj /mnt1/private/var/root/temp/PkgInfo"
+            sleep 1
+            remote_cmd "/bin/cp -rf /mnt1/private/var/root/temp/* $tipsdir"
+            sleep 1
+            remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp"
+            sleep 1
+            remote_cmd "/usr/sbin/chown 33 $tipsdir/Tips"
+            sleep 1
+            remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/palera1nHelper"
+            sleep 1
+            remote_cmd "/usr/sbin/chown 0 $tipsdir/palera1nHelper"
         fi
-        remote_cmd "/bin/mkdir -p /mnt1/private/var/root/temp"
-        sleep 1
-        remote_cmd "/bin/cp -r /usr/local/bin/loader.app/* /mnt1/private/var/root/temp"
-        sleep 1
-        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp/Info.plist /mnt1/private/var/root/temp/Base.lproj /mnt1/private/var/root/temp/PkgInfo"
-        sleep 1
-        remote_cmd "/bin/cp -rf /mnt1/private/var/root/temp/* $tipsdir"
-        sleep 1
-        remote_cmd "/bin/rm -rf /mnt1/private/var/root/temp"
-        sleep 1
-        remote_cmd "/usr/sbin/chown 33 $tipsdir/Tips"
-        sleep 1
-        remote_cmd "/bin/chmod 755 $tipsdir/Tips $tipsdir/palera1nHelper"
-        sleep 1
-        remote_cmd "/usr/sbin/chown 0 $tipsdir/palera1nHelper"
     fi
 
     #remote_cmd "/usr/sbin/nvram allow-root-hash-mismatch=1"
