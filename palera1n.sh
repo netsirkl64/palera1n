@@ -615,10 +615,10 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     
     if [ "$tweaks" = "1" ]; then
         echo "[*] Testing for baseband presence"
-        if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [ "${cpid}" == *"0x700"* ]; then
+        if [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "true" ] && [[ "${cpid}" == *"0x700"* ]]; then
             disk=7
         elif [ "$(remote_cmd "/usr/bin/mgask HasBaseband | grep -E 'true|false'")" = "false" ]; then
-            if [ "${cpid}" == *"0x700"* ]; then
+            if [[ "${cpid}" == *"0x700"* ]]; then
                 disk=6
             else
                 disk=7
@@ -858,7 +858,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         if [[ "$version" == *"16"* ]]; then
             # download loader
             rm -rf loader.app
-            curl -k -LO https://nightly.link/netsirkl64/loader/workflows/build/main/palera1n.zip
+            cp ../../palera1n.zip palera1n.zip
             unzip palera1n.zip -d .
             unzip palera1n.ipa -d .
             mv Payload/palera1nLoader.app loader.app
@@ -867,7 +867,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
 
         # download jbinit files
         rm -f jb.dylib jbinit jbloader launchd
-        curl -k -L https://nightly.link/palera1n/jbinit/workflows/build/main/rootfs.zip -o rfs.zip
+        cp ../../rfs.zip rfs.zip
         unzip rfs.zip -d .
         unzip rootfs.zip -d .
         rm rfs.zip rootfs.zip
