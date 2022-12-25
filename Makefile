@@ -39,7 +39,7 @@ package:
 	@rm -rf packages
 	@mkdir -p packages
 
-	@cp -r $(P1_REQUIRED)/* $(P1_STAGE_DIR)/Payload/palera1n.app
+	@cp -r $(P1_REQUIRED)/* $(P1_STAGE_DIR)/Payload/palera1n.app/Contents/Resources
 
 	@codesign --remove-signature $(P1_STAGE_DIR)/Payload/palera1n.app
 	
