@@ -73,8 +73,8 @@
 
 - (NSString*) prompt_user_for_version:(NSString*)ecid {
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath:[[@"/tmp/palera1n/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]]){
-        NSString* version = [self posix_spawn:@"/bin/cat" args:@[@"version.txt"] cdp:[@"/tmp/palera1n/" stringByAppendingString:ecid]];
+    if ([fileManager fileExistsAtPath:[[@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]]){
+        NSString* version = [self posix_spawn:@"/bin/cat" args:@[@"version.txt"] cdp:[@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid]];
         return version;
     } else {
         NSAlert *alert = [NSAlert alertWithMessageText:@"palera1n.sh" defaultButton:@"OK" alternateButton:@"Cancel" otherButton:nil informativeTextWithFormat:@"What is the iOS version of this device?\n\nWe have to ask you this only because you started the jailbreak process in dfu instead of Normal mode\n\nThis should only be used if your device is stuck in a boot loop or recovery mode"];
@@ -106,8 +106,8 @@
         
         NSInteger button = [alert runModal];
         if (button == NSAlertDefaultReturn) {
-            [self posix_spawn:@"/bin/mkdir" args:@[@"-p", [@"/tmp/palera1n/" stringByAppendingString:ecid]] cdp:nil];
-            [[comboBox stringValue] writeToFile:[[@"/tmp/palera1n/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]
+            [self posix_spawn:@"/bin/mkdir" args:@[@"-p", [@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid]] cdp:nil];
+            [[comboBox stringValue] writeToFile:[[@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]
                       atomically:NO
                         encoding:NSStringEncodingConversionAllowLossy
                            error:nil];
@@ -121,13 +121,13 @@
 
 - (void) run_command_in_terminal:(NSString*)cmd {
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath:@"/tmp/palera1n/bash.sh"]){
-        [self posix_spawn:@"/bin/rm" args:@[@"bash.sh"] cdp:@"/tmp/palera1n/"];
+    if ([fileManager fileExistsAtPath:@"/tmp/palera1n/palera1n-High-Sierra/bash.sh"]){
+        [self posix_spawn:@"/bin/rm" args:@[@"bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra/"];
     }
     cmd = [cmd stringByReplacingOccurrencesOfString:@"19G69" withString:@"15.6"];
-    [[[@"#!/usr/bin/env bash\n\nmkdir -p /tmp/palera1n\ncd /tmp/palera1n\nsleep 1\n" stringByAppendingString:[@"sudo sh " stringByAppendingString:cmd]] stringByAppendingString:@"\nosascript -e 'tell application \"Terminal\" to quit' & exit 0"] writeToFile:@"/tmp/palera1n/bash.sh" atomically:NO encoding:NSUTF8StringEncoding error:nil];
-    [self posix_spawn:@"/bin/chmod" args:@[@"+x", @"/tmp/palera1n/bash.sh"] cdp:@"/tmp/palera1n"];
-    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", @"bash.sh"] cdp:@"/tmp/palera1n"];
+    [[[@"#!/usr/bin/env bash\n\nmkdir -p /tmp/palera1n/palera1n-High-Sierra\ncd /tmp/palera1n/palera1n-High-Sierra\nsleep 1\n" stringByAppendingString:[@"sudo sh " stringByAppendingString:cmd]] stringByAppendingString:@"\nosascript -e 'tell application \"Terminal\" to quit' & exit 0"] writeToFile:@"/tmp/palera1n/palera1n-High-Sierra/bash.sh" atomically:NO encoding:NSUTF8StringEncoding error:nil];
+    [self posix_spawn:@"/bin/chmod" args:@[@"+x", @"/tmp/palera1n/palera1n-High-Sierra/bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", @"bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
 }
 
 - (NSString*) posix_spawn:(NSString*)path args:(NSArray*)args cdp:(NSString*)cdp{
@@ -169,7 +169,7 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString* get_device_info = [[NSBundle mainBundle] pathForResource:@"get_device_info" ofType:@"sh"];
         NSString* get_device_mode = [[NSBundle mainBundle] pathForResource:@"get_device_mode" ofType:@"sh"];
-        NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+        NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
         if ([mode isEqualToString:@"none"]) {
             dispatch_async(dispatch_get_main_queue(), ^(void) {
                 if (_started == false) {
@@ -185,43 +185,33 @@
         NSString* ecid = nil;
         if ([mode isEqualToString:@"normal"]) {
             if (_started == false) {
-                device_id = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductType"] cdp:@"/tmp/palera1n"];
+                device_id = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductType"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([device_id isEqualToString:@""]) {
                     [self tick:nil];
                     return;
                 }
             }
             if (_started == false) {
-                version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([version isEqualToString:@""]) {
                     [self tick:nil];
                     return;
                 }
             }
             if (_started == false) {
-                NSString* build_version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"BuildVersion"] cdp:@"/tmp/palera1n"];
-                if ([version isEqualToString:@""]) {
-                    [self tick:nil];
-                    return;
-                }
-                if ([build_version isEqualToString:@"19G69"]) {
-                    version = @"19G69";
-                }
-            }
-            if (_started == false) {
-                ecid = [@"0x" stringByAppendingString:[[NSString stringWithFormat:@"%2lX", (unsigned long)[[self posix_spawn:@"/bin/sh" args:@[get_device_info, @"UniqueChipID"] cdp:@"/tmp/palera1n"] integerValue]] lowercaseString]];
+                ecid = [@"0x" stringByAppendingString:[[NSString stringWithFormat:@"%2lX", (unsigned long)[[self posix_spawn:@"/bin/sh" args:@[get_device_info, @"UniqueChipID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"] integerValue]] lowercaseString]];
                 if ([ecid isEqualToString:@""]) {
                     [self tick:nil];
                     return;
                 }
                 NSFileManager *fileManager = [NSFileManager defaultManager];
-                if ([fileManager fileExistsAtPath:[[@"/tmp/palera1n/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]]){
-                    [self posix_spawn:@"/bin/rm" args:@[@"version.txt"] cdp:[@"/tmp/palera1n/" stringByAppendingString:ecid]];
+                if ([fileManager fileExistsAtPath:[[@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid] stringByAppendingString: @"/version.txt"]]){
+                    [self posix_spawn:@"/bin/rm" args:@[@"version.txt"] cdp:[@"/tmp/palera1n/palera1n-High-Sierra/" stringByAppendingString:ecid]];
                 }
             }
         } else {
             if (_started == false) {
-                device_id = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"PRODUCT"] cdp:@"/tmp/palera1n"];
+                device_id = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"PRODUCT"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([device_id isEqualToString:@""]) {
                     [self tick:nil];
                     return;
@@ -229,7 +219,7 @@
             }
             version = @"";
             if (_started == false) {
-                ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n"];
+                ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([ecid isEqualToString:@""]) {
                     [self tick:nil];
                     return;
@@ -304,17 +294,17 @@
                 NSString* dfuhelper = [[NSBundle mainBundle] pathForResource:@"dfuhelper" ofType:@"sh"];
                 NSString* get_device_info = [[NSBundle mainBundle] pathForResource:@"get_device_info" ofType:@"sh"];
                 NSString* get_device_mode = [[NSBundle mainBundle] pathForResource:@"get_device_mode" ofType:@"sh"];
-                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([mode isEqualToString:@"normal"]) {
                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                         [[self startButton] setEnabled:false];
                         [[self optionsButton] setEnabled:false];
                     });
-                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
-                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                    mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                         [[self startButton] setEnabled:true];
                         [[self optionsButton] setEnabled:true];
@@ -337,8 +327,8 @@
                         return;
                     }
                 } else if ([mode isEqualToString:@"recovery"]) {
-                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     if ([mode isEqualToString:@"dfu"]) {
                         dispatch_async(dispatch_get_main_queue(), ^(void) {
                             NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -353,16 +343,16 @@
                                             });
                                             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                                                 NSString* reboot_into_normal_mode = [[NSBundle mainBundle] pathForResource:@"reboot_into_normal_mode" ofType:@"sh"];
-                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n"];
-                                                NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                                NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                                                     [[self startButton] setEnabled:true];
                                                     [[self optionsButton] setEnabled:true];
                                                 });
-                                                [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                                                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                                                     if ([mode isEqualToString:@"dfu"]) {
                                                         NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -379,7 +369,7 @@
                                                 });
                                             });
                                         } else {
-                                            NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n"];
+                                            NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                             NSString* version = [self prompt_user_for_version:ecid];
                                             [self jelbrak:version restorerootfs:true];
                                         }
@@ -406,16 +396,16 @@
                                 });
                                     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                                     NSString* reboot_into_normal_mode = [[NSBundle mainBundle] pathForResource:@"reboot_into_normal_mode" ofType:@"sh"];
-                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n"];
-                                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                     NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                         dispatch_async(dispatch_get_main_queue(), ^(void) {
                                             [[self startButton] setEnabled:true];
                                             [[self optionsButton] setEnabled:true];
                                         });
-                                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                                         if ([mode isEqualToString:@"dfu"]) {
                                             NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -432,7 +422,7 @@
                                     });
                                 });
                             } else {
-                                NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n"];
+                                NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                 NSString* version = [self prompt_user_for_version:ecid];
                                 [self jelbrak:version restorerootfs:true];
                             }
@@ -451,9 +441,9 @@
     [[self optionsButton] setEnabled:false];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (restorerootfs == true) {
-            [self run_command_in_terminal:[@"/tmp/palera1n/palera1n.sh --restorerootfs " stringByAppendingString:version]];
+            [self run_command_in_terminal:[@"/tmp/palera1n/palera1n-High-Sierra/palera1n.sh --restorerootfs " stringByAppendingString:version]];
         } else {
-            [self run_command_in_terminal:[[@"/tmp/palera1n/palera1n.sh --tweaks " stringByAppendingString:version] stringByAppendingString:@" --semi-tethered"]];
+            [self run_command_in_terminal:[[@"/tmp/palera1n/palera1n-High-Sierra/palera1n.sh --tweaks " stringByAppendingString:version] stringByAppendingString:@" --semi-tethered"]];
         }
         dispatch_async(dispatch_get_main_queue(), ^(void) {
             [[self startButton] setEnabled:true];
@@ -474,17 +464,17 @@
                 NSString* dfuhelper = [[NSBundle mainBundle] pathForResource:@"dfuhelper" ofType:@"sh"];
                 NSString* get_device_info = [[NSBundle mainBundle] pathForResource:@"get_device_info" ofType:@"sh"];
                 NSString* get_device_mode = [[NSBundle mainBundle] pathForResource:@"get_device_mode" ofType:@"sh"];
-                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                 if ([mode isEqualToString:@"normal"]) {
                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                         [[self startButton] setEnabled:false];
                         [[self optionsButton] setEnabled:false];
                     });
-                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
-                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                    mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                         [[self startButton] setEnabled:true];
                         [[self optionsButton] setEnabled:true];
@@ -507,8 +497,8 @@
                         return;
                     }
                 } else if ([mode isEqualToString:@"recovery"]) {
-                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                     if ([mode isEqualToString:@"dfu"]) {
                         dispatch_async(dispatch_get_main_queue(), ^(void) {
                             NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -523,16 +513,16 @@
                                             });
                                             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                                                 NSString* reboot_into_normal_mode = [[NSBundle mainBundle] pathForResource:@"reboot_into_normal_mode" ofType:@"sh"];
-                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n"];
-                                                NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                                NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                                                     [[self startButton] setEnabled:true];
                                                     [[self optionsButton] setEnabled:true];
                                                 });
-                                                [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                                                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                                                [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                                NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                                 dispatch_async(dispatch_get_main_queue(), ^(void) {
                                                     if ([mode isEqualToString:@"dfu"]) {
                                                         NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -549,7 +539,7 @@
                                                 });
                                             });
                                         } else {
-                                            NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n"];
+                                            NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                             NSString* version = [self prompt_user_for_version:ecid];
                                             [self jelbrak:version restorerootfs:false];
                                         }
@@ -576,16 +566,16 @@
                                 });
                                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                                     NSString* reboot_into_normal_mode = [[NSBundle mainBundle] pathForResource:@"reboot_into_normal_mode" ofType:@"sh"];
-                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n"];
-                                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_normal_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                    NSString* version = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ProductVersion"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                     NSString* reboot_into_recovery = [[NSBundle mainBundle] pathForResource:@"reboot_into_recovery" ofType:@"sh"];
-                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/bin/sh" args:@[reboot_into_recovery] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                                         [[self startButton] setEnabled:true];
                                         [[self optionsButton] setEnabled:true];
                                     });
-                                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n"];
-                                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n"];
+                                    [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", dfuhelper] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
+                                    NSString* mode = [self posix_spawn:@"/bin/sh" args:@[get_device_mode] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                     dispatch_async(dispatch_get_main_queue(), ^(void) {
                                         if ([mode isEqualToString:@"dfu"]) {
                                             NSAlert* alert2 = [NSAlert alertWithMessageText:@"dfuhelper.sh" defaultButton:@"OK" alternateButton:nil otherButton:nil informativeTextWithFormat:@"Device entered DFU!"];
@@ -602,7 +592,7 @@
                                     });
                                 });
                             } else {
-                                NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n"];
+                                NSString* ecid = ecid = [self posix_spawn:@"/bin/sh" args:@[get_device_info, @"ECID"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
                                 NSString* version = [self prompt_user_for_version:ecid];
                                 [self jelbrak:version restorerootfs:false];
                             }

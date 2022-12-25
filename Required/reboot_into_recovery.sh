@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-mkdir -p /tmp/palera1n
-cd /tmp/palera1n
+mkdir -p /tmp/palera1n/palera1n-High-Sierra
+cd /tmp/palera1n/palera1n-High-Sierra
 
 os=$(uname)
 dir="$(pwd)/binaries/$os"
