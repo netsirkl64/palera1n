@@ -1,0 +1,57 @@
+name: Run Makefile
+
+on:
+  push:
+
+  pull_request:
+
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: macos-11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: brew install ldid git
+
+      - name: Compile
+        run: make
+      
+      - name: Upload DMG
+        uses: actions/upload-artifact@v3
+        with:
+          name: palera1n.dmg
+          path: palera1n.dmg
+
+      - name: Set env vars and zip
+        run: |
+          echo "BUILD_VERSION_NUM=$(echo "$(git rev-list --count HEAD | tr -d '\n')")" >> $GITHUB_ENV
+          echo "BUILD_VERSION_SHA=$(echo "$(git rev-parse HEAD | tr -d '\n'])")" >> $GITHUB_ENV
+          echo "BUILD_VERSION_STR=$(echo "$(git rev-list --count HEAD | tr -d '\n')-$(git rev-parse HEAD | tr -d '\n'])")" >> $GITHUB_ENV
+          echo "COMMIT_MSG=$(echo "$(git log -1 --pretty=%B)")" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.BUILD_VERSION_NUM }}
+          release_name: Build ${{ env.BUILD_VERSION_STR }}
+          body: ${{ env.COMMIT_MSG }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset DMG
+        id: upload-release-asset-dmg
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: palera1n.dmg
+          asset_name: palera1n.dmg
+          asset_content_type: application/octet-stream
