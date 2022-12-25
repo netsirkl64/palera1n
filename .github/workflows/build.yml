@@ -64,6 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: palera1n
+          asset_path: palera1n/palera1n.dmg
           asset_name: palera1n.dmg
           asset_content_type: application/octet-stream
