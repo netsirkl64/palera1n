@@ -26,6 +26,18 @@ jobs:
           name: palera1n.dmg
           path: palera1n.dmg
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download ubuntu artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: palera1n.dmg
+          path: palera1n.dmg
+
       - name: Set env vars and zip
         run: |
           echo "BUILD_VERSION_NUM=$(echo "$(git rev-list --count HEAD | tr -d '\n')")" >> $GITHUB_ENV
