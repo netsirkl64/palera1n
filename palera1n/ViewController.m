@@ -178,6 +178,7 @@
                 if (_started == false) {
                     [[self statusTextField] setStringValue:@"Connect your iPhone, iPod touch, or iPad to begin."];
                     [[self startButton] setEnabled:false];
+                    [[self optionsButton] setEnabled:false];
                     [self tick:nil];
                 }
             });
