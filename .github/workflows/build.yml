@@ -2,7 +2,7 @@ name: Run Makefile
 
 on:
   push:
-    branches: [ "main", "gui" ]
+    branches: [ "gui" ]
     
 jobs:
   build:
