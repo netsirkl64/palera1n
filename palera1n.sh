@@ -251,17 +251,25 @@ _wait() {
 _dfuhelper() {
     local step_one;
     deviceid=$( [ -z "$deviceid" ] && _info normal ProductType || echo $deviceid )
-    step_one="Hold volume down + side button"
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step_one="Hold volume down + side button"
+    else
+        step_one="Hold home + power button"
+    fi
     echo "[*] Press any key when ready for DFU mode"
     read -n 1 -s
     step 3 "Get ready"
     step 4 "$step_one" &
     sleep 3
-    "$dir"/irecovery -c "reset"
-    step 1 "Keep holding"
-    step 10 'Release side button, but keep holding volume down'
+    "$dir"/irecovery -c "reset" &
+    wait
+    if [[ "$1" = 0x801* && "$deviceid" != *"iPad"* ]]; then
+        step 10 'Release side button, but keep holding volume down'
+    else
+        step 10 'Release power button, but keep holding home button'
+    fi
     sleep 1
-    
+
     if [ "$(get_device_mode)" = "dfu" ]; then
         echo "[*] Device entered DFU!"
     else
