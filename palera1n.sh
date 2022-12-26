@@ -475,6 +475,7 @@ if [ "$(get_device_mode)" = "normal" ]; then
     echo "[*] Switching device into recovery mode..."
     "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     _wait recovery
+    sleep 2
 fi
 
 # Grab more info
@@ -897,13 +898,42 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
     rm .rd_in_progress
 
     sleep 2
-    echo "[*] Done! Rebooting your device"
+    if [[ "$version" == *"16"* ]]; then
+        echo "[*] Phase 1 done!"
+        echo ""
+        echo "You now need to force restart your device to start next phase"
+        echo ""
+        echo "iPhone 8 or newer"
+        echo "- Press volume up"
+        echo "- Press volume down"
+        echo "- Press and hold the side button for 10-20 seconds until the Apple logo appears"
+        echo ""
+        echo "iPhone 7"
+        echo "- Press and hold the volume down and power buttons for 10-20 seconds until the Apple logo appears"
+        echo ""
+        echo "iPhone 6S/ SE 2016/ iPad 8th or older"
+        echo "- Press and hold the home and power buttons for 10-20 seconds until the Apple logo appears"
+        echo ""
+        echo "This then reboots your iPhoneOS/ iPadOS device into stock normal mode"
+        echo ""
+        if [ ! -e .gitignore ]; then
+            echo "You must then quit out of this Terminal and then hit the Start button again"
+        else
+            echo "You must then quit out of this script and then run the same command once more"
+        fi
+    else
+        echo "[*] Done! Rebooting your device"
+    fi
     remote_cmd "/sbin/reboot"
     sleep 1
     _kill_if_running iproxy
 
     if [ "$semi_tethered" = "1" ]; then
-        sleep 1
+        _wait normal
+        sleep 5
+
+        echo "[*] Switching device into recovery mode..."
+        "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     elif [ -z "$tweaks" ]; then
         _wait normal
         sleep 5
@@ -912,7 +942,7 @@ if [ ! -f blobs/"$deviceid"-"$version".der ]; then
         "$dir"/ideviceenterrecovery $(_info normal UniqueDeviceID)
     fi
     _wait recovery
-    _dfuhelper
+    _dfuhelper "$cpid"
     sleep 2
 fi
 
