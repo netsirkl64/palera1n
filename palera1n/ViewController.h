@@ -15,6 +15,11 @@
 @property (weak) IBOutlet NSButton *optionsButton;
 @property (weak) IBOutlet NSButton *startButton;
 
+@property (weak) IBOutlet NSImageView *line1;
+@property (weak) IBOutlet NSImageView *line2;
+
+@property (weak) IBOutlet NSButton *quickMode;
+
 @property NSArray* compatibleDevicesList;
 
 @property BOOL started;

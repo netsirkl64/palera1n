@@ -67,6 +67,9 @@
     [self posix_spawn:gtar args:@[@"-xzvf", @"palera1n.tar.gz"] cdp:@"/tmp/palera1n"];
     [[self startButton] setEnabled:false];
     [[self optionsButton] setEnabled:false];
+    [[self line1] setFrameSize:NSMakeSize(500, 1)];
+    [[self line2] setFrameSize:NSMakeSize(500, 1)];
+    [[self quickMode] setEnabled:false];
     _started = false;
     [self tick:nil];
 }
