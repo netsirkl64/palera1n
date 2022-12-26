@@ -2,10 +2,7 @@ name: Run Makefile
 
 on:
   push:
-
-  pull_request:
-
-  workflow_dispatch:
+    branches: [ "main", "gui" ]
     
 jobs:
   build:
