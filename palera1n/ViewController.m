@@ -131,7 +131,6 @@
     if ([fileManager fileExistsAtPath:@"/tmp/palera1n/palera1n-High-Sierra/bash.sh"]){
         [self posix_spawn:@"/bin/rm" args:@[@"bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra/"];
     }
-    cmd = [cmd stringByReplacingOccurrencesOfString:@"19G69" withString:@"15.6"];
     [[[@"#!/usr/bin/env bash\n\nmkdir -p /tmp/palera1n/palera1n-High-Sierra\ncd /tmp/palera1n/palera1n-High-Sierra\nsleep 1\n" stringByAppendingString:[@"sudo sh " stringByAppendingString:cmd]] stringByAppendingString:@"\nosascript -e 'tell application \"Terminal\" to quit' & exit 0"] writeToFile:@"/tmp/palera1n/palera1n-High-Sierra/bash.sh" atomically:NO encoding:NSUTF8StringEncoding error:nil];
     [self posix_spawn:@"/bin/chmod" args:@[@"+x", @"/tmp/palera1n/palera1n-High-Sierra/bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
     [self posix_spawn:@"/usr/bin/open" args:@[@"-W", @"-a", @"Terminal", @"bash.sh"] cdp:@"/tmp/palera1n/palera1n-High-Sierra"];
