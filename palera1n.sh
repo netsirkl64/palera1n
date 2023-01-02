@@ -509,6 +509,13 @@ else
         echo "THIS MEANS THAT IF UR DEVICE IS RUNNING 15.6 RC 1, IT WILL NOT BOOT"
         echo "You have two options, you can proceed with 15.6, or you can change it to 19G69."
         echo "IF YOU ARE RUNNING IOS 15.6 RC 1 19G69 TYPE 'Yes'"
+        if [[ "$deviceid" == *"iPad"* ]]; then
+            device_os=iPadOS
+        elif [[ "$deviceid" == *"iPod"* ]]; then
+            device_os=iOS
+        else
+            device_os=iOS
+        fi
         read -r answer
         if [ "$answer" = 'Yes' ]; then
             echo "Are you REALLY sure? WE WARNED YOU!"
@@ -516,7 +523,7 @@ else
             read -r answer
             if [ "$answer" = 'Yes, I am sure' ]; then
                 echo "[*] Enabling 19G69"
-                ipswurl=$(curl -k -sL "https://api.appledb.dev/ios/iOS;19G69.json" | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
+                ipswurl=$(curl -k -sL https://api.appledb.dev/ios/$device_os\;19G69.json | "$dir"/jq -r .devices\[\"$deviceid\"\].ipsw)
                 sshrd19G69="1"
             else
                 ipswurl=$(curl -k -sL "https://api.ipsw.me/v4/device/$deviceid?type=ipsw" | "$dir"/jq '.firmwares | .[] | select(.version=="'"$version"'") | .url' --raw-output)
